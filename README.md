@@ -1,6 +1,11 @@
 # SENG468-Goblin-Trade
 ## Setup guide
-... goes here
+ - install dep if outdated
+    - `make install`
+ - run app
+    - `make web`
+ - clean app
+    - `make clean`
 
 ## Issue with Make
 # Windows Setup (after npm install make)
