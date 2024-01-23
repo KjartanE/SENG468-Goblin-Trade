@@ -1,14 +1,46 @@
-version: '3'
+version: "3"
 services:
   frontend:
+    container_name: frontend
+    restart: always
     build: ./frontend
     ports:
-      - "3000:3000"
+      - "3000:${FRONTEND_PORT}"
+    networks:
+      net-10.9.0.0:
+        ipv4_address: ${FRONTEND_HOST}
+    volumes:
+      - ./frontend/:/frontend/dev
+      - /frontend/dev/node_modules/
+
   backend:
+    container_name: backend
+    restart: always
     build: ./backend
     ports:
-      - "8080:8080"
+      - "8080:${BACKEND_PORT}"
+    networks:
+      net-10.9.0.0:
+        ipv4_address: ${BACKEND_HOST}
+    volumes:
+      - ./backend/:/backend/dev
+      - /backend/dev/node_modules/
+
   database:
-    image: mongo
+    container_name: database
+    build: ./database
     ports:
-      - "27017:27017"
+      - "27017:${DB_PORT}"
+    networks:
+      net-10.9.0.0:
+        ipv4_address: ${DB_HOST}
+
+networks:
+  net-10.9.0.0:
+    name: net-10.9.0.0
+    ipam:
+      config:
+        - subnet: 10.9.0.0/24
+
+volumes:
+    db_data:
