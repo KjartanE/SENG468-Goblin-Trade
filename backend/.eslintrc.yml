@@ -9,8 +9,6 @@ parserOptions:
   ecmaVersion: latest
   sourceType: module
   project: "./backend/tsconfig.json"
-  # tsconfigRootDir: __dirname
-  # tried to solve the tsconfig not found in app.ts
 plugins:
   - react
   - "@typescript-eslint"
