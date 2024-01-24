@@ -5,7 +5,7 @@ const app = express();
 const port = 8080; // You can choose any port
 
 // Placeholder for storing user data (replace with a database later)
-const users: { [key: string]: { name: string, password: string } } = {};
+const users: Record<string, { name: string, password: string }> = {};
 
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());
@@ -41,10 +41,10 @@ app.post('/login', (req, res) => {
   res.json({ success: 'true', data: {token: "your-token"}});
 });
 
-//logout route
+// logout route
 app.post('/logout', (req, res) => {
 
-  //clear any stored token on the client side
+  // clear any stored token on the client side
   res.json({ success: 'true', data: null, message: 'Logout successful' });
 });
 
