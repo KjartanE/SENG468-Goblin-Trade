@@ -7,7 +7,9 @@
     "start": "ts-node src/app.ts",
     "dev": "nodemon src/app.ts",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "prettier-write": "prettier --write .",
+    "prettier-check": "prettier --check ."
   },
   "keywords": [],
   "author": "",
@@ -32,6 +34,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.33.2",
     "nodemon": "^3.0.3",
+    "prettier": "^3.2.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }
