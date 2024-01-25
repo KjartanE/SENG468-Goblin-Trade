@@ -28,6 +28,31 @@ const login = async (req, res) => {
     } catch (err) {
       res.status(401).send({ message: err });
     }
-  };
-  router.post('/login', login);
+};
+router.post('/login', login);
   
+  /**
+ * Get the current User
+ * (./auth/self)
+ * @param {*} req
+ * @param {*} res
+ */
+const self = async (req, res) => {
+    try {
+      if (!req.headers.authorization) {
+        res.status(400).send({ message: 'Self endpoint requires authorization header.' });
+        return;
+      }
+  
+      const token = req.headers.authorization;
+  
+      const response = await authController.self(token);
+  
+      res.status(200).send(response);
+    } catch (err) {
+      res.status(401).send({ message: err });
+    }
+  };
+  router.post('/self',  self);
+  
+  module.exports = router;
