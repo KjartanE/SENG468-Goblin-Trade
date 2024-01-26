@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose"
 
 export interface IUser {
-  _id: string
+  _id?: string
   user_name: string
   password: string
   name: string
@@ -13,6 +13,6 @@ export const userSchema = new Schema<IUser>({
   password: { type: String, required: true },
   name: { type: String, required: true },
   token: { type: String, default: "" }
-})
+}, {collection: 'User'})
 
 module.exports = model("User", userSchema)

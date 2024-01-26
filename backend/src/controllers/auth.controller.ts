@@ -1,9 +1,8 @@
-import type { IUser } from "../models/user.model"
+import { comparePassword } from '../helpers/auth'
+import type { IUser } from '../models/user.model'
+import jwt from 'jsonwebtoken'
 
-const User = require("../models/user.model")
-const jwt = require("jsonwebtoken")
-const jwtDecode = require("jwt-decode")
-const bcrypt = require("bcrypt")
+const User = require('../models/user.model')
 
 /**
  * Auth Controller
@@ -12,11 +11,17 @@ const bcrypt = require("bcrypt")
  * @class AuthController
  */
 export class AuthController {
-  readonly #JWT_SECRET: string = "sadlfkjsfk"
+  readonly #JWT_SECRET: string = 'sadlfkjsfk'
 
   // returns a jwt token
-  public makeJWT = (user: IUser): string => {
-    const jwtToken = jwt.sign(user, process.env.JWT_SECRET ?? this.#JWT_SECRET)
+  public makeJWT = (user_name): string => {
+    const jwtToken = jwt.sign(
+      user_name,
+      process.env.JWT_SECRET || this.#JWT_SECRET,
+      {
+        expiresIn: '1 days',
+      }
+    )
     return jwtToken
   }
 
@@ -29,28 +34,31 @@ export class AuthController {
    * @memberof AuthController
    */
   async login(user_name: string, password: string): Promise<string> {
-    let verifiedJWT = ""
+    let verifiedJWT = ''
 
     const user = await User.findOne({ user_name: user_name })
 
     if (!user) {
-      throw new Error("User not found.")
+      throw new Error('User not found.')
     }
 
     const match = await comparePassword(password, user.password)
 
     if (!match) {
-      throw new Error("Invalid password.")
+      throw new Error('Invalid password.')
     }
 
-    var jwtToken = await this.makeJWT(user)
+    var jwtToken = this.makeJWT({ user_name: user.user_name })
 
-    await User.findOneAndUpdate(
+    const updatedUser = await User.findOneAndUpdate(
       { user_name: user_name },
-      { $set: { token: jwtToken } }
-    ).then(async () => {
-      verifiedJWT = jwtToken
-    })
+      { $set: { token: jwtToken } },
+      { new: true }
+    )
+
+    if (updatedUser) {
+      verifiedJWT = updatedUser.token
+    }
 
     return verifiedJWT
   }
@@ -63,49 +71,29 @@ export class AuthController {
    * @memberof AuthController
    */
   async self(authToken: string): Promise<IUser> {
-    let decodedUser_name = ""
     let selfUser: IUser = {
-      _id: "",
-      user_name: "",
-      password: "",
-      name: "",
-      token: "",
+      _id: '',
+      user_name: '',
+      password: '',
+      name: '',
+      token: '',
     }
 
-    decodedUser_name = jwtDecode(authToken).user_name
+    const verify = jwt.verify(
+      authToken,
+      process.env.JWT_SECRET || this.#JWT_SECRET
+    )
 
-    if (!decodedUser_name) {
-      throw new Error("This token was invalid!")
+    if (!verify || verify['user_name'] === undefined) {
+      throw new Error('This token was invalid!')
     }
 
-    selfUser = await User.findOne({ user_name: decodedUser_name })
+    selfUser = await User.findOne({ user_name: verify['user_name'] })
 
     if (!selfUser) {
-      throw new Error("There was no user with that user_name.")
+      throw new Error('There was no user with that user_name.')
     }
 
     return selfUser
   }
-}
-
-/**
- * Compares a password to a hash
- *
- * @export
- * @param {string} password
- * @param {string} hash
- * @return {*}
- */
-export async function comparePassword(
-  password: string,
-  hash: string
-): Promise<boolean | unknown> {
-  const match = await new Promise((resolve, reject) => {
-    bcrypt.compare(password, hash, function (err: any, result: unknown) {
-      if (err) reject(err)
-      resolve(result)
-    })
-  })
-
-  return match
 }

@@ -13,19 +13,4 @@ db.createUser({
   ],
 })
 
-db.createCollection("user_collection")
-
-db.user_collection.insertMany([
-  {
-    user_name: "user",
-    password: "pass",
-    name: "user",
-    token: "",
-  },
-  {
-    user_name: "kjartan",
-    password: "pass123",
-    name: "kjartan",
-    token: "",
-  },
-])
+db.createCollection("User")
