@@ -19,6 +19,13 @@ services:
     build: ./backend
     ports:
       - "8080:${BACKEND_PORT}"
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_ADMIN=${DB_ADMIN}
+      - DB_ADMIN_PASS=${DB_ADMIN_PASS}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_PORT=${DB_PORT}
+      - JWT_SECRET=${JWT_SECRET}
     networks:
       net-10.9.0.0:
         ipv4_address: ${BACKEND_HOST}
