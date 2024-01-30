@@ -10,8 +10,9 @@ function Home() {
           src={
             'https://www.wargamer.com/wp-content/sites/wargamer/2022/11/dnd-goblin-5e-race-guide-goblin-face-close-up.jpg'
           }
-          className="App-logo"
+          className="logo"
           alt="logo"
+          width={1000}
         />
         <p>GOBLIN TRADE</p>
         <Button variant="contained" href="./login">
