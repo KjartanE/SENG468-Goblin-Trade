@@ -6,6 +6,9 @@ services:
     build: ./frontend
     ports:
       - "3000:${FRONTEND_PORT}"
+    environment:
+      - REACT_APP_BACKEND_HOST=${BACKEND_HOST}
+      - REACT_APP_BACKEND_PORT=${BACKEND_PORT}
     networks:
       net-10.9.0.0:
         ipv4_address: ${FRONTEND_HOST}
@@ -50,4 +53,4 @@ networks:
         - subnet: 10.9.0.0/24
 
 volumes:
-    db_data:
+  db_data:

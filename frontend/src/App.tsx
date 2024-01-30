@@ -1,17 +1,29 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Home from './Pages/Home'
-import Login from './Pages/Login'
-import User from './Pages/User'
+import { BrowserRouter } from 'react-router-dom'
+import Router from './Pages/Router'
+import { ApiContextProvider } from './contexts/ApiContext'
+import { AuthContextProvider } from './contexts/AuthContext'
+import { ThemeProvider, createTheme } from '@mui/material/styles'
+import Layout from './layout/appLayout'
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+})
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/user" element={<User />} />
-      </Routes>
-    </BrowserRouter>
+    <ThemeProvider theme={darkTheme}>
+      <BrowserRouter>
+        <ApiContextProvider>
+          <AuthContextProvider>
+            <Layout>
+              <Router />
+            </Layout>
+          </AuthContextProvider>
+        </ApiContextProvider>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 

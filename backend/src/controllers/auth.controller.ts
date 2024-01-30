@@ -30,13 +30,11 @@ export class AuthController {
    *
    * @param {string} user_name
    * @param {string} password
-   * @return {*}  {Promise<string>}
+   * @return {*}  {Promise<IUser>}
    * @memberof AuthController
    */
-  async login(user_name: string, password: string): Promise<string> {
-    let verifiedJWT = ''
-
-    const user = await User.findOne({ user_name: user_name })
+  async login(user_name: string, password: string): Promise<IUser> {
+    const user: IUser = await User.findOne({ user_name: user_name })
 
     if (!user) {
       throw new Error('User not found.')
@@ -56,11 +54,7 @@ export class AuthController {
       { new: true }
     )
 
-    if (updatedUser) {
-      verifiedJWT = updatedUser.token
-    }
-
-    return verifiedJWT
+    return updatedUser
   }
 
   /**
