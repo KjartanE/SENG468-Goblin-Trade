@@ -1,4 +1,4 @@
-// import Footer from '../components/footer'
+import Footer from '../components/footer'
 import Navbar from '../components/navbar'
 import { Box, Container, CssBaseline } from '@mui/material'
 
@@ -33,8 +33,7 @@ export default function Layout({ children }: any) {
           </Box>
         </Container>
       </Box>
-
-      {/* <Footer /> */}
+      <Footer />
     </Box>
   )
 }

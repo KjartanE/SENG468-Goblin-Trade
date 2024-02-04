@@ -7,15 +7,12 @@ import {
   Menu,
   MenuItem,
   IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu' // Importing the burger menu icon
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import Sidebar from './sidebar'
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate()
@@ -75,37 +72,25 @@ const Navbar: React.FC = () => {
         >
           <MenuIcon />
         </IconButton>
-        <Drawer
-          anchor={'left'}
-          open={isDrawerOpen}
-          onClose={toggleDrawer(false)}
-        >
-          <List>
-            {/* Add conditions and side  bar things here */}
-            <ListItem button onClick={() => navigate('/')}>
-              <ListItemText primary="Home" />
-            </ListItem>
-            <ListItem button onClick={() => navigate('/user')}>
-              <ListItemText primary="Profile" />
-            </ListItem>
-          </List>
-        </Drawer>
-        <Typography
-          variant="h6"
-          component="div"
-          sx={{
+        <Sidebar
+          isOpen={isDrawerOpen}
+          toggleDrawer={toggleDrawer}
+          isAuthenticated={!!user}
+        />
+        <img
+          src="../../public/logo.png"
+          alt="Logo"
+          onClick={handleLogoClick}
+          style={{
+            cursor: 'pointer',
             position: 'absolute',
-            width: '100%',
-            left: 0,
+            width: '120px',
+            left: '50%',
             top: '50%',
-            transform: 'translateY(-50%)',
-            textAlign: 'center',
+            transform: 'translate(-50%, -50%)',
             zIndex: 0,
           }}
-          onClick={handleLogoClick}
-        >
-          Goblin Trade
-        </Typography>
+        />
         <div style={{ display: 'flex', zIndex: 1 }}>
           {user ? (
             <>
