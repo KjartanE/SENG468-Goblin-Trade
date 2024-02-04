@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Formik } from 'formik'
 import * as Yup from 'yup'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import { useNavigate } from 'react-router-dom'
 import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography' // Import Typography for the error message
 import { useAuth } from '../contexts/AuthContext'
 import { Container } from '@mui/material'
 
@@ -16,6 +17,8 @@ export const loginSchema = Yup.object().shape({
 function Login() {
   const authContext = useAuth()
   const navigate = useNavigate()
+  const [loginFailed, setLoginFailed] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   const handleLogin = async (loginDetails: {
     username: string
@@ -31,7 +34,9 @@ function Login() {
         navigate('/user')
       }
     } catch (error) {
-      console.log(error) //TODO: Add error handling here || SNACKBAR for error
+      console.log(error)
+      setLoginFailed(true)
+      setErrorMessage('* Invalid credentials')
     }
   }
 
@@ -41,8 +46,8 @@ function Login() {
         <p>Login Page</p>
         <Formik
           initialValues={{ username: '', password: '' }}
-          onSubmit={values => {
-            handleLogin(values)
+          onSubmit={(values, { setSubmitting }) => {
+            handleLogin(values).finally(() => setSubmitting(false))
           }}
           validationSchema={loginSchema}
         >
@@ -53,8 +58,9 @@ function Login() {
             handleChange,
             handleBlur,
             handleSubmit,
-          }: any) => (
-            <Box>
+            isSubmitting,
+          }) => (
+            <form onSubmit={handleSubmit}>
               <Box m={2}>
                 <TextField
                   fullWidth
@@ -88,18 +94,35 @@ function Login() {
                   variant="outlined"
                 />
               </Box>
+              {loginFailed && errorMessage && (
+                <Box m={2}>
+                  <Typography color="error">{errorMessage}</Typography>
+                </Box>
+              )}
               <Box m={2}>
                 <Button
                   fullWidth
-                  onClick={handleSubmit}
                   size="large"
                   type="submit"
                   variant="contained"
+                  disabled={isSubmitting}
                 >
                   Login
                 </Button>
               </Box>
-            </Box>
+              {loginFailed && (
+                <Box m={2}>
+                  <Button
+                    fullWidth
+                    size="large"
+                    href="/register"
+                    variant="contained"
+                  >
+                    Register
+                  </Button>
+                </Box>
+              )}
+            </form>
           )}
         </Formik>
       </Box>
