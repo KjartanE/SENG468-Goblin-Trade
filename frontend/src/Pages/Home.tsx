@@ -1,6 +1,5 @@
 import React from 'react'
 import './App.css'
-import Button from '@mui/material/Button'
 
 function Home() {
   return (
@@ -15,9 +14,6 @@ function Home() {
           width={1000}
         />
         <p>GOBLIN TRADE</p>
-        <Button variant="contained" href="./login">
-          SIGN IN
-        </Button>
       </header>
     </div>
   )

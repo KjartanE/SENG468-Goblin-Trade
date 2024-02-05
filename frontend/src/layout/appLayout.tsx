@@ -1,5 +1,5 @@
-// import Footer from '../components/footer'
-// import Navbar from '../components/navbar'
+import Footer from '../components/footer'
+import Navbar from '../components/navbar'
 import { Box, Container, CssBaseline } from '@mui/material'
 
 export default function Layout({ children }: any) {
@@ -13,7 +13,9 @@ export default function Layout({ children }: any) {
     >
       <CssBaseline />
 
-      <Box sx={{ height: '7vh' }}>{/* <Navbar /> */}</Box>
+      <Box sx={{ height: '7vh' }}>
+        <Navbar />
+      </Box>
 
       <Box sx={{ display: 'flex', flex: 1 }}>
         <Container maxWidth="xl">
@@ -31,8 +33,7 @@ export default function Layout({ children }: any) {
           </Box>
         </Container>
       </Box>
-
-      {/* <Footer /> */}
+      <Footer />
     </Box>
   )
 }

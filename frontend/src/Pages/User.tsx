@@ -2,7 +2,6 @@ import React from 'react'
 import './App.css'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
-import Button from '@mui/material/Button'
 import { useAuth } from '../contexts/AuthContext'
 
 function User() {
@@ -26,9 +25,6 @@ function User() {
               <Typography variant="body1" marginTop={50}>
                 More coming soon...
               </Typography>
-              <Button variant="contained" onClick={authContext.logout}>
-                Logout
-              </Button>
             </Box>
           </div>
         ) : (
