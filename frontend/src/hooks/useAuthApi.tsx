@@ -5,7 +5,7 @@ const useAuthApi = (axios: AxiosInstance) => {
   /**
    * Signs the user into the application by returning their user token
    */
-  const login = async (username: string, password: string): Promise<IUser> => {
+  const login = async (username: string, password: string): Promise<string> => {
     const { data } = await axios.post('/auth/login', {
       user_name: username,
       password,

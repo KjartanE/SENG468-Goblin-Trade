@@ -51,25 +51,22 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
   const api = useApi()
 
   /**
-   * This useEffect is triggered anytime the app loads
-   * Which means for any reload it will check the localStorage cache to check,
-   * if a user is currently logged in
+   * This useEffect is triggered anytime the userToken is changed
+   * Which means for any reload when the userToken is changed it will fetch the user data
    */
   useEffect(() => {
-    const fetchUser = async () => {
-      const storageUser = localStorage.getItem('user')
+    const getUser = async () => {
+      if (!api.userToken) return
 
-      if (storageUser) {
-        const loadedUser = JSON.parse(storageUser)
+      const user = await api.auth.self()
 
-        if (loadedUser && loadedUser != undefined) {
-          api.setUserToken(loadedUser.token)
-          setUser(loadedUser)
-        }
+      if (user) {
+        setUser(user)
       }
     }
-    fetchUser()
-  }, [])
+
+    getUser()
+  }, [api.userToken])
 
   /**
    * This useEffect is triggered anytime that the user state is changed
@@ -77,7 +74,7 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
    */
   useEffect(() => {
     if (user !== authContextDefaultValues.user) {
-      localStorage.setItem('user', JSON.stringify(user))
+      localStorage.setItem('user', JSON.stringify(user?.token))
     }
   }, [user])
 
@@ -89,14 +86,13 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
    * @return {*}
    */
   const login = async (username: string, password: string) => {
-    const loggedUser = await api.auth.login(username, password)
+    const userToken = await api.auth.login(username, password)
 
-    if (loggedUser) {
-      api.setUserToken(loggedUser.token)
-      setUser(loggedUser)
+    if (userToken) {
+      api.setUserToken(userToken)
     }
 
-    return loggedUser
+    return userToken
   }
 
   /**
