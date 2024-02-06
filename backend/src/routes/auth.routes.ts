@@ -20,7 +20,7 @@ const login = async (req, res) => {
     if (!req.body.user_name || !req.body.password) {
       res
         .status(400)
-        .send({ success: 'false', data: null, error: 'Feilds cannot be empty' })
+        .send({ success: 'false', data: null, error: 'Fields cannot be empty' })
       return
     }
 
@@ -29,7 +29,7 @@ const login = async (req, res) => {
       req.body.password
     )
 
-    res.status(200).send(response)
+    res.status(200).send(response.token)
   } catch (err) {
     console.log('err', err)
     res.status(401).send({ message: err })
