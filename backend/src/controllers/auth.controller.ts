@@ -26,6 +26,21 @@ export class AuthController {
   }
 
   /**
+   * Validate token on auth request
+   *
+   * @param {string} token
+   * @memberof AuthController
+   */
+  validateToken = (token: string): boolean => {
+    try {
+      jwt.verify(token, process.env.JWT_SECRET || this.#JWT_SECRET)
+      return true
+    } catch (err) {
+      return false
+    }
+  }
+
+  /**
    * Login user
    *
    * @param {string} user_name
@@ -89,5 +104,37 @@ export class AuthController {
     }
 
     return selfUser
+  }
+
+  /**
+   * Register user
+   *
+   * @param {string} user_name
+   * @param {string} password
+   * @param {string} name
+   * @return {*}  {Promise<IUser>}
+   * @memberof AuthController
+   */
+  async register(
+    user_name: string,
+    password: string,
+    name: string
+  ): Promise<IUser> {
+    const user: IUser = await User.findOne({ user_name: user_name })
+
+    if (user) {
+      throw new Error('User already exists.')
+    }
+
+    const jwtToken = this.makeJWT({ user_name: user_name })
+
+    const newUser = await User.create({
+      user_name,
+      password,
+      name,
+      token: jwtToken,
+    })
+
+    return newUser
   }
 }
