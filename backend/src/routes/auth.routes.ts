@@ -45,14 +45,14 @@ router.post('/login', login)
  */
 const self = async (req, res) => {
   try {
-    if (!req.headers.authorization) {
+    if (!req.headers.token) {
       res
         .status(400)
-        .send({ message: 'Self endpoint requires authorization header.' })
+        .send({ message: 'Self endpoint requires token header.' })
       return
     }
 
-    const token = req.headers.authorization
+    const token = req.headers.token
 
     const response = await authController.self(token)
 

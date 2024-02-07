@@ -11,14 +11,15 @@ router.use(bodyParser.json())
 
 const getStockPrices = async (req, res) => {
   try {
-    if (!req.headers.authorization) {
+    if (!req.headers.token) {
       res.status(400).send({
-        message: 'getstockprices endpoint requires authorization header.',
+        message: 'getstockprices endpoint requires token header.',
       })
       return
     }
+    const token = req.headers.token
 
-    authController.validateToken(req.headers.authorization)
+    authController.validateToken(token)
 
     const response = await stockController.getStockPrices()
 
@@ -32,14 +33,13 @@ router.get('/getstockprices', getStockPrices)
 
 const getStockPortfolio = async (req, res) => {
   try {
-    const token = req.headers.authorization
-
-    if (!token) {
+    if (!req.headers.token) {
       res.status(400).send({
-        message: 'getstockportfolio endpoint requires authorization header.',
+        message: 'getstockportfolio endpoint requires token header.',
       })
       return
     }
+    const token = req.headers.token
 
     authController.validateToken(token)
 
