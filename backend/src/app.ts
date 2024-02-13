@@ -1,8 +1,10 @@
 import express from 'express'
 import cors from 'cors'
-import { create_users } from './helpers/db'
+import { add_mock_data } from './helpers/db'
 
 const auth = require('./routes/auth.routes')
+const stock = require('./routes/stock.routes')
+const wallet = require('./routes/wallet.routes')
 
 const app = express()
 
@@ -15,7 +17,9 @@ app.use(express.urlencoded({ extended: true }))
 
 // Connect to the database
 const db = require('./models')
-db.mongoose
+const mongoose = db.mongoose
+
+mongoose
   .connect(db.url)
   .then(() => {
     console.log('Connected to the database!')
@@ -26,10 +30,12 @@ db.mongoose
   })
 
 // Import data
-create_users()
+add_mock_data()
 
 // Routes
-app.use('/auth', auth)
+app.use('/', auth)
+app.use('/', stock)
+app.use('/', wallet)
 
 app.get('/', (req, res) => {
   res.send('Back End:  "Meow Meow Brother."')

@@ -1,4 +1,6 @@
+import { IPortfolio } from '../../models/portfolio.model'
 import { IUser } from '../../models/user.model'
+import { IWallet } from '../../models/wallet.model'
 
 export const userData: IUser[] = [
   { user_name: 'user1', password: 'password1', name: 'User 1', token: '' },
@@ -21,4 +23,50 @@ export const userData: IUser[] = [
   { user_name: 'user18', password: 'password18', name: 'User 18', token: '' },
   { user_name: 'user19', password: 'password19', name: 'User 19', token: '' },
   { user_name: 'user20', password: 'password20', name: 'User 20', token: '' },
+]
+
+export const userWalletData: IWallet[] = [
+  { user_name: 'user1', balance: 100000 },
+  { user_name: 'user2', balance: 100000 },
+  { user_name: 'user3', balance: 100000 },
+  { user_name: 'user4', balance: 100000 },
+  { user_name: 'user5', balance: 100000 },
+  { user_name: 'user6', balance: 100000 },
+  { user_name: 'user7', balance: 100000 },
+  { user_name: 'user8', balance: 100000 },
+  { user_name: 'user9', balance: 100000 },
+  { user_name: 'user10', balance: 100000 },
+  { user_name: 'user11', balance: 100000 },
+  { user_name: 'user12', balance: 100000 },
+  { user_name: 'user13', balance: 100000 },
+  { user_name: 'user14', balance: 100000 },
+  { user_name: 'user15', balance: 100000 },
+  { user_name: 'user16', balance: 100000 },
+  { user_name: 'user17', balance: 100000 },
+  { user_name: 'user18', balance: 100000 },
+  { user_name: 'user19', balance: 100000 },
+  { user_name: 'user20', balance: 100000 },
+]
+
+export const portfolioData: IPortfolio[] = [
+  { user_name: 'user1', stock_id: 1, quantity_owned: 100 },
+  { user_name: 'user2', stock_id: 2, quantity_owned: 100 },
+  { user_name: 'user3', stock_id: 3, quantity_owned: 100 },
+  { user_name: 'user4', stock_id: 4, quantity_owned: 100 },
+  { user_name: 'user5', stock_id: 5, quantity_owned: 100 },
+  { user_name: 'user6', stock_id: 6, quantity_owned: 100 },
+  { user_name: 'user7', stock_id: 7, quantity_owned: 100 },
+  { user_name: 'user8', stock_id: 8, quantity_owned: 100 },
+  { user_name: 'user9', stock_id: 9, quantity_owned: 100 },
+  { user_name: 'user10', stock_id: 10, quantity_owned: 100 },
+  { user_name: 'user11', stock_id: 11, quantity_owned: 100 },
+  { user_name: 'user12', stock_id: 12, quantity_owned: 100 },
+  { user_name: 'user13', stock_id: 13, quantity_owned: 100 },
+  { user_name: 'user14', stock_id: 14, quantity_owned: 100 },
+  { user_name: 'user15', stock_id: 15, quantity_owned: 100 },
+  { user_name: 'user16', stock_id: 16, quantity_owned: 100 },
+  { user_name: 'user17', stock_id: 17, quantity_owned: 100 },
+  { user_name: 'user18', stock_id: 18, quantity_owned: 100 },
+  { user_name: 'user19', stock_id: 19, quantity_owned: 100 },
+  { user_name: 'user20', stock_id: 20, quantity_owned: 100 },
 ]

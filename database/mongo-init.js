@@ -14,3 +14,8 @@ db.createUser({
 })
 
 db.createCollection("User")
+db.createCollection("Stock")
+db.createCollection("Portfolio")
+db.createCollection("Wallet")
+db.createCollection("Wallet_Transaction")
+db.createCollection("Stock_Transaction")

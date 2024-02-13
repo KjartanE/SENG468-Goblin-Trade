@@ -51,7 +51,7 @@ export const ApiContextProvider = (props: PropsWithChildren) => {
 
   const axiosInstance = axios.create({
     headers: {
-      Authorization: userToken || '',
+      token: userToken || '',
     },
     baseURL,
   })
