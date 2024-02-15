@@ -46,9 +46,7 @@ router.post('/login', login)
 const self = async (req, res) => {
   try {
     if (!req.headers.token) {
-      res
-        .status(400)
-        .send({ message: 'Self endpoint requires token header.' })
+      res.status(400).send({ message: 'Self endpoint requires token header.' })
       return
     }
 

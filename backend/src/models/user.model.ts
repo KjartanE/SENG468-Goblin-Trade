@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose"
+import { Schema, model } from 'mongoose'
 
 export interface IUser {
   _id?: string
@@ -8,11 +8,14 @@ export interface IUser {
   token: string
 }
 
-export const userSchema = new Schema<IUser>({
-  user_name: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  name: { type: String, required: true },
-  token: { type: String, default: "" }
-}, {collection: 'User'})
+export const userSchema = new Schema<IUser>(
+  {
+    user_name: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    name: { type: String, required: true },
+    token: { type: String, default: '' },
+  },
+  { collection: 'User' }
+)
 
-module.exports = model("User", userSchema)
+module.exports = model('User', userSchema)
