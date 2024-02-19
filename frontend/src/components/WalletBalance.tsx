@@ -1,36 +1,12 @@
-import { useState, useEffect } from 'react'
-import { useAuth } from '../contexts/AuthContext'
+import { useWallet } from '../contexts/WalletContext'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import { useNavigate } from 'react-router-dom'
 
 function WalletBalance() {
-  const authContext = useAuth()
-  const [walletBalance, setWalletBalance] = useState(null)
+  const { wallet } = useWallet()
   const navigate = useNavigate()
-
-  useEffect(() => {
-    const fetchWalletBalance = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/getwalletbalance', {
-          method: 'GET',
-          headers: new Headers({
-            'Content-Type': 'application/json',
-            token: authContext.user?.token || '',
-          }),
-        })
-        const data = await response.json()
-        setWalletBalance(data[0].balance)
-      } catch (error) {
-        console.error('Error:', error)
-      }
-    }
-
-    if (authContext.user?.token) {
-      fetchWalletBalance()
-    }
-  }, [authContext.user?.token])
-
+  console.log('wallet in walletBalance Component', wallet)
   return (
     <Box
       sx={{
@@ -55,7 +31,7 @@ function WalletBalance() {
       >
         +
       </Button>
-      <span>{walletBalance !== null ? `$${walletBalance}` : 'Loading...'}</span>
+      <span>{wallet !== null ? `$${wallet}` : 'Loading...'}</span>
     </Box>
   )
 }
