@@ -5,6 +5,7 @@ import { add_mock_data } from './helpers/db'
 const auth = require('./routes/auth.routes')
 const stock = require('./routes/stock.routes')
 const wallet = require('./routes/wallet.routes')
+const order = require('./routes/order.routes')
 
 const app = express()
 
@@ -36,6 +37,7 @@ add_mock_data()
 app.use('/', auth)
 app.use('/', stock)
 app.use('/', wallet)
+app.use('/', order)
 
 app.get('/', (req, res) => {
   res.send('Back End:  "Meow Meow Brother."')
