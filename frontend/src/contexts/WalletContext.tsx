@@ -5,7 +5,7 @@ import React, {
   useEffect,
   ReactNode,
 } from 'react'
-import { useAuth } from './AuthContext' // Adjust import path as necessary
+import { useAuth } from './AuthContext'
 
 type WalletContextType = {
   wallet: { user_name: string; balance: number } | null
