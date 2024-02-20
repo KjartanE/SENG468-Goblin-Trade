@@ -1,8 +1,8 @@
-import React from 'react'
 import './App.css'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import { useAuth } from '../contexts/AuthContext'
+import WalletBalance from '../components/WalletBalance'
 
 function User() {
   const authContext = useAuth()
@@ -12,18 +12,32 @@ function User() {
       <header className="App-header">
         {authContext.user ? (
           <div>
-            <Box sx={{ width: '100%', maxWidth: 1000 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: '100%',
+                marginBottom: 4,
+              }}
+            >
+              <WalletBalance />
+            </Box>
+            <Box
+              sx={{
+                width: '100%',
+                maxWidth: 1000,
+                position: 'relative',
+                mb: 5,
+              }}
+            >
               <Typography variant="h2" gutterBottom>
                 Welcome back, {authContext.user.name}.
               </Typography>
-              {/* Add more attributes as needed */}
             </Box>
             <Box sx={{ width: '100%', maxWidth: 1000, minHeight: 500 }}>
               <Typography variant="h5">
                 Username: {authContext.user.user_name}
-              </Typography>
-              <Typography variant="body1" marginTop={50}>
-                More coming soon...
               </Typography>
             </Box>
           </div>
