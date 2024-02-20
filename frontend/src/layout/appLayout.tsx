@@ -17,7 +17,7 @@ export default function Layout({ children }: any) {
         <Navbar />
       </Box>
 
-      <Box sx={{ display: 'flex', flex: 1 }}>
+      <Box sx={{ display: 'flex', flex: 1, marginBottom: 5 }}>
         <Container maxWidth="xl">
           <Box
             sx={{
