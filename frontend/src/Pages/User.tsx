@@ -66,6 +66,14 @@ function User() {
                 My Wallet
               </Button>
             </Box>
+            <Typography
+              variant="h5"
+              align="left"
+              marginBottom={2}
+              marginTop={5}
+            >
+              Your portfolio:
+            </Typography>
             <Box>
               <StockPortfolioComponent />
             </Box>
