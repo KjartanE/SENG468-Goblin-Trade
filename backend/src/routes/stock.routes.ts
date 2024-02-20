@@ -1,25 +1,22 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import { StockController } from '../controllers/stock.controller'
-import { AuthController } from '../controllers/auth.controller'
+import { handleToken } from '../helpers/auth'
 
 const router = express.Router()
 const stockController: StockController = new StockController()
-const authController: AuthController = new AuthController()
 
 router.use(bodyParser.json())
 
+/**
+ * Get all Stock Prices
+ *
+ * @param {*} req
+ * @param {*} res
+ */
 const getStockPrices = async (req, res) => {
   try {
-    if (!req.headers.token) {
-      res.status(400).send({
-        message: 'getstockprices endpoint requires token header.',
-      })
-      return
-    }
-    const token = req.headers.token
-
-    authController.validateToken(token)
+    await handleToken(req, res)
 
     const response = await stockController.getStockPrices()
 
@@ -31,19 +28,18 @@ const getStockPrices = async (req, res) => {
 }
 router.get('/getstockprices', getStockPrices)
 
+/**
+ * Get Users stock portfolio
+ *
+ * @param {*} req
+ * @param {*} res
+ */
 const getStockPortfolio = async (req, res) => {
   try {
-    if (!req.headers.token) {
-      res.status(400).send({
-        message: 'getstockportfolio endpoint requires token header.',
-      })
-      return
-    }
-    const token = req.headers.token
+    const auth = await handleToken(req, res)
+    console.log('auth', auth)
 
-    authController.validateToken(token)
-
-    const response = await stockController.getStockPortfolio(token)
+    const response = await stockController.getStockPortfolio(auth.user_name)
 
     res.status(200).send(response)
   } catch (err) {

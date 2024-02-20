@@ -1,9 +1,10 @@
+import { AuthController } from '../controllers/auth.controller'
 import { IUser } from '../models/user.model'
+import { jwtDecode } from 'jwt-decode'
 
 const User = require('../models/user.model')
 const bcrypt = require('bcrypt')
-const jwt_decode = require('jwt-decode')
-
+const authController: AuthController = new AuthController()
 /**
  * Hashes a password
  *
@@ -52,7 +53,7 @@ export async function comparePassword(password: string, hash: string) {
  */
 export async function getUsername(authToken: string) {
   let user_name = ''
-  user_name = jwt_decode(authToken).user_name
+  user_name = jwtDecode<{ user_name: string }>(authToken).user_name
   if (!user_name) throw new Error('Invalid authentication token.')
   return user_name
 }
@@ -99,4 +100,35 @@ export async function getUid(authToken: string) {
   if (!user) throw new Error('User not found.')
 
   return user._id
+}
+
+/**
+ * Returns the username of the user associated with this authToken. Throws exception if authtoken is invalid or user not found.
+ *
+ * @export
+ * @param {*} req
+ * @param {*} res
+ * @return {*}  {(Promise<{ user_name: string }>)}
+ */
+export async function handleToken(
+  req: any,
+  res: any
+): Promise<{ user_name: string }> {
+  if (!req.headers.token) {
+    res.status(400).send({
+      message: 'getwalletbalance endpoint requires token header.',
+    })
+  }
+
+  const token = req.headers.token
+
+  if (!authController.validateToken(token)) {
+    res.status(400).send({
+      message: 'Invalid token',
+    })
+  }
+
+  const user_name = await getUsername(token)
+
+  return { user_name }
 }
