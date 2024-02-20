@@ -55,7 +55,6 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     }
   }, [authContext.user?.token])
 
-  console.log('wallet in WalletContext:', wallet)
   return (
     <WalletContext.Provider value={{ wallet }}>
       {children}

@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom'
 function WalletBalance() {
   const { wallet } = useWallet()
   const navigate = useNavigate()
-  console.log('wallet in walletBalance Component', wallet)
   return (
     <Box
       sx={{
