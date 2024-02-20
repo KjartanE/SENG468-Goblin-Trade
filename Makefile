@@ -10,13 +10,13 @@ build-web: ## Builds all backend+web containers
 	@echo "==============================================="
 	@echo "Make: build-web - building web images"
 	@echo "==============================================="
-	@docker-compose -f docker-compose.yml build frontend backend database rabbitmq
+	@docker-compose -f docker-compose.yml build frontend backend database rabbitmq matching_engine
 
 run-web: ## Runs all backend+web containers
 	@echo "==============================================="
 	@echo "Make: run-web - running web images"
 	@echo "==============================================="
-	@docker-compose -f docker-compose.yml up -d frontend backend database rabbitmq
+	@docker-compose -f docker-compose.yml up -d frontend backend database rabbitmq matching_engine
 
 log-frontend: ## Runs `docker logs <container> -f` for the frontend container
 	@echo "==============================================="
@@ -35,6 +35,18 @@ log-db: ## Runs `docker logs <container> -f` for the db container
 	@echo "Running docker logs for the db container"
 	@echo "==============================================="
 	@docker logs database -f
+
+log-rabbitmq: ## Runs `docker logs <container> -f` for the rabbitmq container
+	@echo "==============================================="
+	@echo "Running docker logs for the rabbitmq container"
+	@echo "==============================================="
+	@docker logs rabbitmq -f
+
+log-matching_engine: ## Runs `docker logs <container> -f` for the matching_engine container
+	@echo "==============================================="
+	@echo "Running docker logs for the matching_engine container"
+	@echo "==============================================="
+	@docker logs matching_engine -f
 
 close: ## Closes all project containers
 	@echo "==============================================="
@@ -58,3 +70,7 @@ install: ## Runs `npm install` for all projects
 	@echo "==============================================="
 	@cd frontend && npm install && cd ..
 	@echo "==============================================="
+	@echo "Running /matching_engine install"
+	@echo "==============================================="
+	@cd matching_engine && npm install && cd ..
+	

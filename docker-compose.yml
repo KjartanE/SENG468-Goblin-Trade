@@ -62,6 +62,33 @@ services:
       - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
     networks:
       - rabbitmq_go_net
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  matching_engine:
+    container_name: matching_engine
+    build: ./matching_engine
+    ports:
+      - "7000:7000"
+    environment:
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+      - MATCHING_ENGINE_HOST=${MATCHING_ENGINE_HOST}
+      - MATCHING_ENGINE_PORT=${MATCHING_ENGINE_PORT}
+    networks:
+      net-10.9.0.0:
+        ipv4_address: ${MATCHING_ENGINE_HOST}
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
 
 networks:
   net-10.9.0.0:
@@ -69,7 +96,7 @@ networks:
     ipam:
       config:
         - subnet: 10.9.0.0/24
-  
+
   rabbitmq_go_net:
     driver: bridge
 
