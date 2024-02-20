@@ -19,7 +19,7 @@ export class WalletController {
     const user = await User.findOne({ token: token })
     const user_name = user.user_name
 
-    const walletBalance = await Wallet.find({ user_name: user_name }).select(
+    const walletBalance = await Wallet.findOne({ user_name: user_name }).select(
       'user_name balance'
     )
 

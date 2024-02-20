@@ -1,17 +1,13 @@
 import { useWallet } from '../contexts/WalletContext'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import IconButton from '@mui/material/IconButton' // Import IconButton
-import RefreshIcon from '@mui/icons-material/Refresh' // Import RefreshIcon
-import { useNavigate } from 'react-router-dom'
 
 function WalletBalance() {
-  const { wallet, refreshWallet } = useWallet() // Destructure refreshWallet from the context
-  const navigate = useNavigate()
+  const { wallet, refreshWallet, updateWallet } = useWallet() // Destructure refreshWallet from the context
 
-  // Handle the refresh action
-  const handleRefresh = () => {
-    refreshWallet() // Call the refreshWallet function to update the wallet balance
+  const handleAddFunds = async (amount: number) => {
+    await updateWallet(amount) // Call the updateWallet function to add funds to the wallet
+    await refreshWallet() // Call the refreshWallet function to update the wallet balance
   }
 
   return (
@@ -28,7 +24,7 @@ function WalletBalance() {
       <Button
         variant="contained"
         size="small"
-        onClick={() => navigate('/addFunds')}
+        onClick={() => handleAddFunds(100)}
         sx={{
           minWidth: '32px',
           height: '32px',
@@ -36,18 +32,12 @@ function WalletBalance() {
           padding: 0,
         }}
       >
-        +
+        + 100
       </Button>
-      <span>{wallet !== null ? `$${wallet.balance}` : 'Loading...'}</span>{' '}
-      <IconButton
-        size="small"
-        onClick={handleRefresh}
-        sx={{
-          marginLeft: 'auto',
-        }}
-      >
-        <RefreshIcon />
-      </IconButton>
+
+      {/* Display the wallet balance */}
+      {wallet && wallet.balance}
+      {!wallet && <span>Loading...</span>}
     </Box>
   )
 }

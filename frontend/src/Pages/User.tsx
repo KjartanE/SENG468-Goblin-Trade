@@ -11,7 +11,7 @@ function User() {
     <div className="User">
       <header className="App-header">
         {authContext.user ? (
-          <div>
+          <>
             <Box
               sx={{
                 display: 'flex',
@@ -40,7 +40,7 @@ function User() {
                 Username: {authContext.user.user_name}
               </Typography>
             </Box>
-          </div>
+          </>
         ) : (
           <p>Loading user data...</p>
         )}

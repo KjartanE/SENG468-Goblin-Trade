@@ -7,15 +7,20 @@ import React, {
   useCallback,
 } from 'react'
 import { useAuth } from './AuthContext'
+import { useApi } from './ApiContext'
 
 type WalletContextType = {
   wallet: { user_name: string; balance: number } | null
   refreshWallet: () => void
+  updateWallet: (amount: number) => void
 }
 
 const walletContextDefaultValues: WalletContextType = {
   wallet: null,
   refreshWallet: () => {
+    null
+  },
+  updateWallet: () => {
     null
   },
 }
@@ -37,23 +42,19 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     user_name: string
     balance: number
   } | null>(null)
+
   const authContext = useAuth()
+  const api = useApi()
 
   const fetchWalletBalance = useCallback(async () => {
-    if (!authContext.user?.token) return
-
     try {
-      const response = await fetch('http://localhost:8080/getwalletbalance', {
-        method: 'GET',
-        headers: new Headers({
-          'Content-Type': 'application/json',
-          token: authContext.user?.token,
-        }),
-      })
-      const data = await response.json()
+      if (!authContext.user?.token) return
+
+      const response = await api.wallet.getWalletBalance()
+
       setWalletBalance({
-        user_name: data[0].user_name,
-        balance: data[0].balance,
+        user_name: response.user_name,
+        balance: response.balance,
       })
     } catch (error) {
       console.error('Error:', error)
@@ -68,8 +69,19 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     fetchWalletBalance()
   }
 
+  const updateWallet = async (amount: number) => {
+    try {
+      if (!authContext.user?.token) return
+
+      await api.wallet.updateWalletBalance(amount)
+      fetchWalletBalance()
+    } catch (error) {
+      console.error('Error:', error)
+    }
+  }
+
   return (
-    <WalletContext.Provider value={{ wallet, refreshWallet }}>
+    <WalletContext.Provider value={{ wallet, refreshWallet, updateWallet }}>
       {children}
     </WalletContext.Provider>
   )
