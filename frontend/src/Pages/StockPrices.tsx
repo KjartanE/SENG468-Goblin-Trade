@@ -2,27 +2,8 @@ import './App.css'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import { useAuth } from '../contexts/AuthContext'
-import { DataGrid, GridColDef } from '@mui/x-data-grid'
-
-const columns: GridColDef[] = [
-  { field: 'id', headerName: 'ID', width: 90 },
-  {
-    field: 'name',
-    headerName: 'Name',
-    width: 300,
-  },
-  {
-    field: 'current_price',
-    headerName: 'Current Price',
-    width: 300,
-  },
-]
-
-const rows = [
-  { id: 1, name: 'AAAAAAA', current_price: 9999 },
-  { id: 2, name: 'BBBBBBB', current_price: 8888 },
-  { id: 3, name: 'CCCCCCC', current_price: 7777 },
-]
+import StockPricesComponent from '../components/StockPricesComponent'
+import Button from '@mui/material/Button'
 
 function StockPrices() {
   const authContext = useAuth()
@@ -42,23 +23,17 @@ function StockPrices() {
               }}
             >
               <Typography variant="h2" gutterBottom>
-                {authContext.user.name}
+                Current Stock Prices
               </Typography>
-            </Box>
-            <Box sx={{ height: 400, width: '100%', mb: 5 }}>
-              <DataGrid
-                rows={rows}
-                columns={columns}
-                initialState={{
-                  pagination: {
-                    paginationModel: {
-                      pageSize: 5,
-                    },
-                  },
-                }}
-                pageSizeOptions={[5]}
-                disableRowSelectionOnClick
-              />
+              {<StockPricesComponent />}
+              <Button
+                variant="contained"
+                color="primary"
+                href="/user"
+                sx={{ marginLeft: 1 }}
+              >
+                Back
+              </Button>
             </Box>
           </div>
         ) : (
