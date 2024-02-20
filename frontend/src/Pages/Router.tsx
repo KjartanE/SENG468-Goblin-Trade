@@ -3,6 +3,7 @@ import Home from './Home'
 import Login from './Login'
 import User from './User'
 import StockPrices from './StockPrices'
+import StockTransactions from './StockTransactions'
 
 const Router = () => {
   return (
@@ -11,6 +12,7 @@ const Router = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/user" element={<User />} />
       <Route path="/stock-prices" element={<StockPrices />} />
+      <Route path="/stock-transactions" element={<StockTransactions />} />
     </Routes>
   )
 }
