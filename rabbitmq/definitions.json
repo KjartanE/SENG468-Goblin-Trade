@@ -31,6 +31,13 @@
       "durable": false,
       "auto_delete": false,
       "arguments": {}
+    },
+    {
+      "name": "finished_orders",
+      "vhost": "/",
+      "durable": false,
+      "auto_delete": false,
+      "arguments": {}
     }
   ],
   "exchanges": [],

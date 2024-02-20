@@ -39,6 +39,11 @@ services:
     volumes:
       - ./backend/:/backend/dev
       - /backend/dev/node_modules/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
 
   database:
     container_name: database
