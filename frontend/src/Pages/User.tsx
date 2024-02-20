@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography'
 import { useAuth } from '../contexts/AuthContext'
 import WalletBalance from '../components/WalletBalance'
 import Button from '@mui/material/Button'
+import StockPortfolioComponent from '../components/StockPortfolioComponent'
 
 function User() {
   const authContext = useAuth()
@@ -64,6 +65,9 @@ function User() {
               >
                 My Wallet
               </Button>
+            </Box>
+            <Box>
+              <StockPortfolioComponent />
             </Box>
           </div>
         ) : (
