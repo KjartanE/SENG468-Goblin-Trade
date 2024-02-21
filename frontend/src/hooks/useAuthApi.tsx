@@ -31,10 +31,17 @@ const useAuthApi = (axios: AxiosInstance) => {
    * @return {*}  {Promise<string>}
    */
   const register = async (
-    username: string,
-    password: string
+    user_name: string,
+    password: string,
+    name: string
   ): Promise<string> => {
-    const { data } = await axios.post('/register', { username, password })
+    const aname = 'StaticName'
+    // console.log({ user_name, password, name }) //testing payload
+    const { data } = await axios.post('/register', {
+      user_name,
+      password,
+      name,
+    })
 
     return data
   }
