@@ -31,7 +31,7 @@ export default function Layout({ children }: any) {
             {children}
           </Box>
         </Container>
-      </Stack>
+      </Box>
       <Footer />
     </Box>
   )
