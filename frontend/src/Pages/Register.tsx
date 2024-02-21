@@ -13,6 +13,11 @@ export const registerSchema = Yup.object().shape({
   name: Yup.string().required('Required'),
   username: Yup.string().required('Required'),
   password: Yup.string().required('Required').min(3, 'Too Short!'),
+  password2: Yup.string()
+    .required('Required')
+    .test('passwords-match', 'Passwords must match', function (value) {
+      return this.parent.password === value
+    }),
 })
 
 function Register() {
@@ -22,23 +27,17 @@ function Register() {
   const [errorMessage, setErrorMessage] = useState('')
 
   const handleregister = async (registerDetails: {
-    name: string
     username: string
+    name: string
     password: string
+    password2: string
   }) => {
     try {
-      type userRegister = {
-        username: string
-        email: string
-        password1: string
-        password2: string
-      }
-
-      const userRegisterData: userRegister = {
+      const userRegisterData = {
         username: registerDetails.username,
-        email: registerDetails.name,
+        email: registerDetails.name, // Authcontext asks for  email instead of name atm
         password1: registerDetails.password,
-        password2: registerDetails.password,
+        password2: registerDetails.password2,
       }
 
       const user = await authContext.register(userRegisterData)
@@ -49,24 +48,13 @@ function Register() {
     } catch (error) {
       console.log(error)
       setLoginFailed(true)
-      setErrorMessage('* Invalid credentials')
+      setErrorMessage('* Registration failed *')
     }
   }
 
   return (
     <Container maxWidth="xl">
-      <Box
-        sx={{
-          backgroundImage:
-            "url('https://bg3.wiki/w/images/4/4e/Goblin-face.png')",
-          backgroundRepeat: 'no-repeat',
-          backgroundSize: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '65vh',
-        }}
-      >
+      <Box>
         <Box
           sx={{
             width: '50%',
@@ -82,11 +70,11 @@ function Register() {
               name: '',
               username: '',
               password: '',
-              confirmPassword: '',
+              password2: '',
             }}
             onSubmit={(values, { setSubmitting }) => {
               console.log('Submitting:', values)
-              setSubmitting(false)
+              handleregister(values).finally(() => setSubmitting(false))
             }}
             validationSchema={registerSchema}
           >
@@ -155,19 +143,27 @@ function Register() {
                   <TextField
                     fullWidth
                     helperText={
-                      errors.password && touched.password && errors.password
+                      (errors.password2 &&
+                        touched.password2 &&
+                        errors.password2) ||
+                      (errors.password && touched.password)
                     }
                     label="Re-enter Password"
-                    name="confirmPassword"
+                    name="password2"
                     onBlur={handleBlur}
                     onChange={handleChange}
                     placeholder="Enter password again"
                     type="password"
-                    value={values.confirmPassword}
+                    value={values.password2}
                     variant="outlined"
                     margin="normal"
                   />
                 </Box>
+                {loginFailed && errorMessage && (
+                  <Box m={2}>
+                    <Typography color="error">{errorMessage}</Typography>
+                  </Box>
+                )}
                 <Box m={2}>
                   <Button
                     sx={{
