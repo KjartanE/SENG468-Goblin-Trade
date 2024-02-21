@@ -1,7 +1,6 @@
 import { IStock } from '../models/stock.model'
 
 const Stock = require('../models/stock.model')
-const User = require('../models/user.model')
 const Portfolio = require('../models/portfolio.model')
 
 /**
@@ -32,17 +31,14 @@ export class StockController {
   /**
    * Get Users stock portfolio
    *
-   * @param {string} token
+   * @param {string} user_name
    * @return {*}  {Promise<IStock[]>}
    * @memberof StockController
    */
-  async getStockPortfolio(token: string): Promise<IStock[]> {
-    const user = await User.findOne({ token: token })
-    const user_name = user.user_name
-
+  async getStockPortfolio(user_name: string): Promise<IStock[]> {
     const userPortfolio = await Portfolio.find({ user_name: user_name }).select(
       'stock_id quantity_owned'
-    )
+      )
 
     if (!userPortfolio) {
       throw new Error('There were no stocks found.')

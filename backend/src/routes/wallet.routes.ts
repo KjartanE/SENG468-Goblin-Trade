@@ -1,10 +1,10 @@
 import express from 'express'
 import bodyParser from 'body-parser'
-import { AuthController } from '../controllers/auth.controller'
 import { WalletController } from '../controllers/wallet.controller'
+import { handleToken } from '../helpers/auth'
 
 const router = express.Router()
-const authController: AuthController = new AuthController()
+
 const walletController: WalletController = new WalletController()
 
 router.use(bodyParser.json())
@@ -17,17 +17,9 @@ router.use(bodyParser.json())
  */
 const getWalletBalance = async (req, res) => {
   try {
-    if (!req.headers.token) {
-      res.status(400).send({
-        message: 'getwalletbalance endpoint requires token header.',
-      })
-      return
-    }
-    const token = req.headers.token
+    const auth = await handleToken(req, res)
 
-    authController.validateToken(token)
-
-    const response = await walletController.getWalletBalance(token)
+    const response = await walletController.getWalletBalance(auth.user_name)
 
     res.status(200).send(response)
   } catch (err) {
@@ -37,21 +29,22 @@ const getWalletBalance = async (req, res) => {
 }
 router.get('/getwalletbalance', getWalletBalance)
 
+/**
+ * Update Wallet Balance
+ *
+ * @param {*} req
+ * @param {*} res
+ */
 const addMoneyToWallet = async (req, res) => {
   try {
-    if (!req.headers.token) {
-      res.status(400).send({
-        message: 'updatewalletbalance endpoint requires token header.',
-      })
-      return
-    }
-    const token = req.headers.token
-
-    authController.validateToken(token)
+    const auth = await handleToken(req, res)
 
     const amount = req.body.amount
 
-    const response = await walletController.addMoneyToWallet(token, amount)
+    const response = await walletController.addMoneyToWallet(
+      auth.user_name,
+      amount
+    )
 
     res.status(200).send(response)
   } catch (err) {
@@ -60,5 +53,30 @@ const addMoneyToWallet = async (req, res) => {
   }
 }
 router.post('/addmoney', addMoneyToWallet)
+
+/**
+ * Get Wallet Transactions
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+const getWalletTransactions = async (req, res) => {
+  try {
+    const auth = await handleToken(req, res)
+
+    const response = await walletController.getWalletTransactions(
+      auth.user_name
+    )
+
+    const transactions =
+      await walletController.getWalletTransactionsByTXIds(response)
+
+    res.status(200).send(transactions)
+  } catch (err) {
+    console.log('err', err)
+    res.status(401).send({ message: err })
+  }
+}
+router.get('/getwallettransactions', getWalletTransactions)
 
 module.exports = router

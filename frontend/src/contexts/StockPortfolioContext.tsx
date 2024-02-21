@@ -6,9 +6,13 @@ import React, {
   ReactNode,
 } from 'react'
 import { useAuth } from './AuthContext'
+export interface StockPortfolio {
+  stock_id?: number
+  quantity_owned?: number
+}
 
 type StockPortfolioType = {
-  stock_portfolio: unknown[]
+  stock_portfolio: StockPortfolio[]
 }
 
 const stockPortfolioContextDefaultValues: StockPortfolioType = {
@@ -24,7 +28,7 @@ export function useStockPortfolio() {
 }
 
 export function StockPortfolioProvider({ children }: { children: ReactNode }) {
-  const [stock_portfolio, setStockPortfolio] = useState<unknown[]>([])
+  const [stock_portfolio, setStockPortfolio] = useState<StockPortfolio[]>([])
   const authContext = useAuth()
 
   useEffect(() => {
