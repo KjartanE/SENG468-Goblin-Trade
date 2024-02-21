@@ -18,7 +18,7 @@ export class WalletController {
    * @memberof WalletController
    */
   async getWalletBalance(user_name: string): Promise<IWallet> {
-    const walletBalance = await Wallet.find({ user_name: user_name }).select(
+    const walletBalance = await Wallet.findOne({ user_name: user_name }).select(
       'user_name balance'
     )
 
