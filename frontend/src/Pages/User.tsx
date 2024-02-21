@@ -13,7 +13,7 @@ function User() {
     <div className="User">
       <header className="App-header">
         {authContext.user ? (
-          <div>
+          <>
             <Box
               sx={{
                 width: '100%',
