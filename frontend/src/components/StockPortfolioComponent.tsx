@@ -1,11 +1,7 @@
+import { useStockPrices } from '../contexts/StockPricesContext'
 import { useStockPortfolio } from '../contexts/StockPortfolioContext'
 import Box from '@mui/material/Box'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
-
-interface StockPortfolio {
-  stock_id?: number
-  quantity_owned?: number
-}
 
 const columns: GridColDef[] = [
   {
@@ -33,7 +29,9 @@ const columns: GridColDef[] = [
 function StockPortfolioComponent() {
   // Fetch stock portfolio from backend
   const { stock_portfolio } = useStockPortfolio()
-  if (stock_portfolio == null) {
+  const { stock_prices } = useStockPrices()
+
+  if (stock_portfolio == null || stock_prices == null) {
     return <Box>Loading...</Box>
   }
 
@@ -42,6 +40,12 @@ function StockPortfolioComponent() {
     (StockPortfolio: any, index: number) => ({
       id: index + 1,
       stock_id: StockPortfolio.stock_id,
+      stock_name: stock_prices.find(
+        stock => stock.stock_id === StockPortfolio.stock_id
+      )?.stock_name,
+      current_price: stock_prices.find(
+        stock => stock.stock_id === StockPortfolio.stock_id
+      )?.current_price,
       quantity_owned: StockPortfolio.quantity_owned,
     })
   )
