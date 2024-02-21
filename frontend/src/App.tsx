@@ -2,6 +2,7 @@ import { BrowserRouter } from 'react-router-dom'
 import Router from './Pages/Router'
 import { ApiContextProvider } from './contexts/ApiContext'
 import { AuthContextProvider } from './contexts/AuthContext'
+import { StockPricesProvider } from './contexts/StockPricesContext'
 import { WalletProvider } from './contexts/WalletContext'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import Layout from './layout/appLayout'
@@ -18,11 +19,13 @@ function App() {
       <BrowserRouter>
         <ApiContextProvider>
           <AuthContextProvider>
-            <WalletProvider>
-              <Layout>
-                <Router />
-              </Layout>
-            </WalletProvider>
+            <StockPricesProvider>
+              <WalletProvider>
+                <Layout>
+                  <Router />
+                </Layout>
+              </WalletProvider>
+            </StockPricesProvider>
           </AuthContextProvider>
         </ApiContextProvider>
       </BrowserRouter>

@@ -16,8 +16,7 @@ export default function Layout({ children }: any) {
       <Stack sx={{ height: '7vh' }}>
         <Navbar />
       </Stack>
-
-      <Stack sx={{ display: 'flex', flex: 1 }}>
+      <Box sx={{ display: 'flex', flex: 1, marginBottom: 5 }}>
         <Container maxWidth="xl">
           <Box
             sx={{
