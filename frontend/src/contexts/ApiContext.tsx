@@ -7,9 +7,11 @@ import {
   useEffect,
 } from 'react'
 import useAuthApi from '../hooks/useAuthApi'
+import useWalletApi from '../hooks/useWalletApi'
 
 interface IApiContext {
   auth: ReturnType<typeof useAuthApi>
+  wallet: ReturnType<typeof useWalletApi>
   userToken: string
   setUserToken: (token: string) => void
 }
@@ -57,9 +59,11 @@ export const ApiContextProvider = (props: PropsWithChildren) => {
   })
 
   const auth = useAuthApi(axiosInstance)
+  const wallet = useWalletApi(axiosInstance)
 
   const apiContext: IApiContext = {
     auth,
+    wallet,
     userToken,
     setUserToken,
   }

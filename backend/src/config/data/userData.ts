@@ -26,7 +26,7 @@ export const userData: IUser[] = [
 ]
 
 export const userWalletData: IWallet[] = [
-  { user_name: 'user1', balance: 100000 },
+  { user_name: 'user1', balance: 100001 },
   { user_name: 'user2', balance: 100000 },
   { user_name: 'user3', balance: 100000 },
   { user_name: 'user4', balance: 100000 },

@@ -12,7 +12,7 @@ function User() {
     <div className="User">
       <header className="App-header">
         {authContext.user ? (
-          <div>
+          <>
             <Box
               sx={{
                 width: '100%',
@@ -65,7 +65,7 @@ function User() {
                 My Wallet
               </Button>
             </Box>
-          </div>
+          </>
         ) : (
           <p>Loading user data...</p>
         )}
