@@ -60,7 +60,6 @@ export function StockTransactionsProvider({
           }
         )
         const data = await response.json()
-        console.log(data)
         setStockTransactions(data)
       } catch (error) {
         console.error('Error:', error)

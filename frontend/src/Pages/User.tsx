@@ -44,7 +44,7 @@ function User() {
               <Button
                 variant="contained"
                 color="primary"
-                href="/stock-prices"
+                href="/stock-details"
                 sx={{ marginLeft: 1 }}
               >
                 Stock Details
