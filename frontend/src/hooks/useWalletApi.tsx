@@ -1,10 +1,6 @@
 import { AxiosInstance } from 'axios'
 import { IWalletTransactions } from '../types/wallet'
-
-export interface IWallet {
-  user_name: string
-  balance: number
-}
+import { IWallet } from '../types/wallet'
 
 /**
  * Wallet API
