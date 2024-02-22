@@ -7,6 +7,7 @@ import { WalletProvider } from './contexts/WalletContext'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import Layout from './layout/appLayout'
 import { StockPortfolioProvider } from './contexts/StockPortfolioContext'
+import { StockTransactionsProvider } from './contexts/StockTransactionsContext'
 
 const darkTheme = createTheme({
   palette: {
@@ -20,15 +21,17 @@ function App() {
       <BrowserRouter>
         <ApiContextProvider>
           <AuthContextProvider>
-            <StockPricesProvider>
-              <StockPortfolioProvider>
-                <WalletProvider>
-                  <Layout>
-                    <Router />
-                  </Layout>
-                </WalletProvider>
-              </StockPortfolioProvider>
-            </StockPricesProvider>
+            <StockTransactionsProvider>
+              <StockPricesProvider>
+                <StockPortfolioProvider>
+                  <WalletProvider>
+                    <Layout>
+                      <Router />
+                    </Layout>
+                  </WalletProvider>
+                </StockPortfolioProvider>
+              </StockPricesProvider>
+            </StockTransactionsProvider>
           </AuthContextProvider>
         </ApiContextProvider>
       </BrowserRouter>

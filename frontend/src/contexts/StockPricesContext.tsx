@@ -6,7 +6,8 @@ import React, {
   ReactNode,
 } from 'react'
 import { useAuth } from './AuthContext'
-export interface IStock {
+
+export interface Stock {
   stock_id?: number
   stock_name: string
   current_price: number
@@ -14,7 +15,7 @@ export interface IStock {
 }
 
 type StockPricesType = {
-  stock_prices: IStock[]
+  stock_prices: Stock[]
 }
 
 const stockPricesContextDefaultValues: StockPricesType = {
@@ -30,7 +31,7 @@ export function useStockPrices() {
 }
 
 export function StockPricesProvider({ children }: { children: ReactNode }) {
-  const [stock_prices, setStockPrices] = useState<IStock[]>([])
+  const [stock_prices, setStockPrices] = useState<Stock[]>([])
   const authContext = useAuth()
 
   useEffect(() => {
