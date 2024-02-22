@@ -15,10 +15,12 @@ function WalletBalance() {
       sx={{
         bgcolor: 'background.paper',
         borderRadius: '10px',
-        p: 1,
         display: 'flex',
         alignItems: 'center',
         gap: 1,
+        px: 2,
+        py: 1,
+        mx: 0,
       }}
     >
       <Button
@@ -29,10 +31,11 @@ function WalletBalance() {
           minWidth: '32px',
           height: '32px',
           lineHeight: '32px',
-          padding: 0,
+          padding: 1,
+          mr: 2,
         }}
       >
-        + 100
+        Quick Add: 100
       </Button>
 
       {/* Display the wallet balance */}

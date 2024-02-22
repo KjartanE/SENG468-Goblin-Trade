@@ -1,17 +1,9 @@
 import { AxiosInstance } from 'axios'
+import { IWalletTransactions } from '../types/wallet'
 
 export interface IWallet {
   user_name: string
   balance: number
-}
-export interface IWalletTransactions {
-  _id?: string
-  wallet_tx_id?: string
-  stock_tx_id?: string
-  is_debit?: boolean
-  amount?: number
-  time_stamp?: string
-  __v?: number
 }
 
 /**

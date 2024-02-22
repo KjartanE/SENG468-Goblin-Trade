@@ -7,16 +7,7 @@ import React, {
 } from 'react'
 import { useAuth } from './AuthContext'
 import { useApi } from './ApiContext'
-import IWalletTransactions from '../hooks/useWalletApi'
-
-export interface IWalletTransactions {
-  wallet_tx_id?: string
-  stock_tx_id?: string
-  is_debit?: boolean
-  amount?: number
-  time_stamp?: string
-  __v?: number
-}
+import { IWalletTransactions } from '../types/wallet'
 
 type WalletTransactionsType = {
   wallet_transactions: IWalletTransactions[]
@@ -51,7 +42,6 @@ export function WalletTransactionsProvider({
         if (!authContext.user?.token) return
 
         const data = await api.wallet.getWalletTransactions()
-        console.log(data)
         setWalletTransactions(data)
       } catch (error) {
         console.error('Error:', error)

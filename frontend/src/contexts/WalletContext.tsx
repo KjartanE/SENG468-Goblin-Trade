@@ -8,9 +8,10 @@ import React, {
 } from 'react'
 import { useAuth } from './AuthContext'
 import { useApi } from './ApiContext'
+import { IWallet } from '@/types/wallet'
 
 type WalletContextType = {
-  wallet: { user_name: string; balance: number } | null
+  wallet: IWallet | null
   refreshWallet: () => void
   updateWallet: (amount: number) => void
 }
@@ -38,10 +39,7 @@ interface WalletProviderProps {
 }
 
 export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
-  const [wallet, setWalletBalance] = useState<{
-    user_name: string
-    balance: number
-  } | null>(null)
+  const [wallet, setWalletBalance] = useState<IWallet | null>(null)
 
   const authContext = useAuth()
   const api = useApi()
@@ -50,12 +48,9 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     try {
       if (!authContext.user?.token) return
 
-      const response = await api.wallet.getWalletBalance()
+      const data = await api.wallet.getWalletBalance()
 
-      setWalletBalance({
-        user_name: response.user_name,
-        balance: response.balance,
-      })
+      setWalletBalance(data)
     } catch (error) {
       console.error('Error:', error)
     }
