@@ -7,10 +7,10 @@ import React, {
 } from 'react'
 import { useAuth } from './AuthContext'
 import { useApi } from './ApiContext'
-import { IWalletTransactions } from '../types/wallet'
+import { IWalletTransaction } from '../types/wallet'
 
 type WalletTransactionsType = {
-  wallet_transactions: IWalletTransactions[]
+  wallet_transactions: IWalletTransaction[]
 }
 
 const walletTransactionsContextDefaultValues: WalletTransactionsType = {
@@ -31,7 +31,7 @@ export function WalletTransactionsProvider({
   children: ReactNode
 }) {
   const [wallet_transactions, setWalletTransactions] = useState<
-    IWalletTransactions[]
+    IWalletTransaction[]
   >([])
   const authContext = useAuth()
   const api = useApi()

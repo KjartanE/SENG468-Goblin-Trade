@@ -9,9 +9,9 @@ export interface IWallet {
 }
 
 /**
- * The currently signed in user's wallet transactions
+ * An entry in the user's recent wallet transactions
  */
-export interface IWalletTransactions {
+export interface IWalletTransaction {
   _id?: string
   wallet_tx_id?: string
   stock_tx_id?: string

@@ -2,12 +2,6 @@ import { useStockPrices } from '../contexts/StockPricesContext'
 import Box from '@mui/material/Box'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
 
-interface Stock {
-  stock_id?: number
-  stock_name?: string
-  current_price?: number
-}
-
 const columns: GridColDef[] = [
   {
     field: 'stock_id',

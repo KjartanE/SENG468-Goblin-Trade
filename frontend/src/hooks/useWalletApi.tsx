@@ -1,5 +1,5 @@
 import { AxiosInstance } from 'axios'
-import { IWalletTransactions } from '../types/wallet'
+import { IWalletTransaction } from '../types/wallet'
 import { IWallet } from '../types/wallet'
 
 /**
@@ -39,7 +39,7 @@ const useWalletApi = (axios: AxiosInstance) => {
    *
    * @return {*}  {Promise<string>}
    */
-  const getWalletTransactions = async (): Promise<IWalletTransactions[]> => {
+  const getWalletTransactions = async (): Promise<IWalletTransaction[]> => {
     const { data } = await axios.get('/getWalletTransactions')
 
     return data

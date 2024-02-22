@@ -6,10 +6,7 @@ import React, {
   ReactNode,
 } from 'react'
 import { useAuth } from './AuthContext'
-export interface StockPortfolio {
-  stock_id?: number
-  quantity_owned?: number
-}
+import { StockPortfolio } from '../types/stocks'
 
 type StockPortfolioType = {
   stock_portfolio: StockPortfolio[]
