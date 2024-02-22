@@ -42,7 +42,7 @@ function StockPricesComponent() {
   }))
 
   return (
-    <Box sx={{ height: 625, width: '100%', mb: 5 }}>
+    <Box sx={{ width: '100%', mb: 5 }}>
       <DataGrid
         rows={mapped_stock_prices}
         columns={columns}
@@ -56,7 +56,7 @@ function StockPricesComponent() {
             },
           },
         }}
-        pageSizeOptions={[5]}
+        pageSizeOptions={[5, 10, 20]}
         disableRowSelectionOnClick
       />
     </Box>
