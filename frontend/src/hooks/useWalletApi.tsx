@@ -4,6 +4,15 @@ export interface IWallet {
   user_name: string
   balance: number
 }
+export interface IWalletTransactions {
+  _id?: string
+  wallet_tx_id?: string
+  stock_tx_id?: string
+  is_debit?: boolean
+  amount?: number
+  time_stamp?: string
+  __v?: number
+}
 
 /**
  * Wallet API
@@ -37,9 +46,21 @@ const useWalletApi = (axios: AxiosInstance) => {
     return data
   }
 
+  /**
+   * Get wallet transaction history
+   *
+   * @return {*}  {Promise<string>}
+   */
+  const getWalletTransactions = async (): Promise<IWalletTransactions[]> => {
+    const { data } = await axios.get('/getWalletTransactions')
+
+    return data
+  }
+
   return {
     getWalletBalance,
     updateWalletBalance,
+    getWalletTransactions,
   }
 }
 

@@ -4,6 +4,7 @@ import { ApiContextProvider } from './contexts/ApiContext'
 import { AuthContextProvider } from './contexts/AuthContext'
 import { StockPricesProvider } from './contexts/StockPricesContext'
 import { WalletProvider } from './contexts/WalletContext'
+import { WalletTransactionsProvider } from './contexts/WalletTransactionsContext'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import Layout from './layout/appLayout'
 import { StockPortfolioProvider } from './contexts/StockPortfolioContext'
@@ -25,9 +26,11 @@ function App() {
               <StockPricesProvider>
                 <StockPortfolioProvider>
                   <WalletProvider>
-                    <Layout>
-                      <Router />
-                    </Layout>
+                    <WalletTransactionsProvider>
+                      <Layout>
+                        <Router />
+                      </Layout>
+                    </WalletTransactionsProvider>
                   </WalletProvider>
                 </StockPortfolioProvider>
               </StockPricesProvider>
