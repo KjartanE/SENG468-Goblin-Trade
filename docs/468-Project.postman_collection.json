@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "1d4eba76-2f2d-47ad-9ef1-c1d9da3c033c",
+		"_postman_id": "385bca15-fd6d-4d17-beb4-91fd363058b7",
 		"name": "468-Project",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "19069030"
+		"_exporter_id": "22286560"
 	},
 	"item": [
 		{
@@ -342,7 +342,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "your-token",
+								"value": "{{token}}",
 								"type": "text"
 							}
 						],
@@ -404,7 +404,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "your-token",
+								"value": "{{token}}",
 								"type": "text"
 							}
 						],
@@ -552,7 +552,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "your-token",
+								"value": "{{token}}",
 								"type": "text"
 							}
 						],
