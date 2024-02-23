@@ -1,6 +1,6 @@
 import { AxiosInstance } from 'axios'
 import { IStock } from '../types/stocks'
-import { StockPortfolio } from '../types/stocks'
+import { IStockPortfolio } from '../types/stocks'
 import { IStockTransaction } from '../types/stocks'
 
 /**
@@ -29,7 +29,7 @@ const useStockAPI = (axios: AxiosInstance) => {
    * @param {number} amount
    * @return {*}  {Promise<string>}
    */
-  const getStockPortfolio = async (): Promise<StockPortfolio[]> => {
+  const getStockPortfolio = async (): Promise<IStockPortfolio[]> => {
     const { data } = await axios.get('/getStockPortfolio')
 
     return data

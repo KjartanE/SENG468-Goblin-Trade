@@ -7,10 +7,10 @@ import React, {
 } from 'react'
 import { useAuth } from './AuthContext'
 import { useApi } from './ApiContext'
-import { StockPortfolio } from '../types/stocks'
+import { IStockPortfolio } from '../types/stocks'
 
 type StockPortfolioType = {
-  stock_portfolio: StockPortfolio[]
+  stock_portfolio: IStockPortfolio[]
 }
 
 const stockPortfolioContextDefaultValues: StockPortfolioType = {
@@ -26,7 +26,7 @@ export function useStockPortfolio() {
 }
 
 export function StockPortfolioProvider({ children }: { children: ReactNode }) {
-  const [stock_portfolio, setStockPortfolio] = useState<StockPortfolio[]>([])
+  const [stock_portfolio, setStockPortfolio] = useState<IStockPortfolio[]>([])
   const authContext = useAuth()
   const api = useApi()
 

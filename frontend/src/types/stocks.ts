@@ -11,7 +11,7 @@ export interface IStock {
 /**
  * A stock within a user's portfolio
  */
-export interface StockPortfolio {
+export interface IStockPortfolio {
   stock_id?: number
   quantity_owned?: number
 }
