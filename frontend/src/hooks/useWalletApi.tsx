@@ -1,9 +1,6 @@
 import { AxiosInstance } from 'axios'
-
-export interface IWallet {
-  user_name: string
-  balance: number
-}
+import { IWalletTransaction } from '../types/wallet'
+import { IWallet } from '../types/wallet'
 
 /**
  * Wallet API
@@ -37,9 +34,21 @@ const useWalletApi = (axios: AxiosInstance) => {
     return data
   }
 
+  /**
+   * Get wallet transaction history
+   *
+   * @return {*}  {Promise<string>}
+   */
+  const getWalletTransactions = async (): Promise<IWalletTransaction[]> => {
+    const { data } = await axios.get('/getWalletTransactions')
+
+    return data
+  }
+
   return {
     getWalletBalance,
     updateWalletBalance,
+    getWalletTransactions,
   }
 }
 

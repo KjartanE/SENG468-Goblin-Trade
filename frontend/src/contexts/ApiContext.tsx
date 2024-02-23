@@ -8,10 +8,12 @@ import {
 } from 'react'
 import useAuthApi from '../hooks/useAuthApi'
 import useWalletApi from '../hooks/useWalletApi'
+import useStockAPI from '../hooks/useStockApi'
 
 interface IApiContext {
   auth: ReturnType<typeof useAuthApi>
   wallet: ReturnType<typeof useWalletApi>
+  stocks: ReturnType<typeof useStockAPI>
   userToken: string
   setUserToken: (token: string) => void
 }
@@ -60,10 +62,12 @@ export const ApiContextProvider = (props: PropsWithChildren) => {
 
   const auth = useAuthApi(axiosInstance)
   const wallet = useWalletApi(axiosInstance)
+  const stocks = useStockAPI(axiosInstance)
 
   const apiContext: IApiContext = {
     auth,
     wallet,
+    stocks,
     userToken,
     setUserToken,
   }

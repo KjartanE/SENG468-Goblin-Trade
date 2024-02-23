@@ -1,7 +1,7 @@
 import { useStockPrices } from '../contexts/StockPricesContext'
 import { useStockPortfolio } from '../contexts/StockPortfolioContext'
 import Box from '@mui/material/Box'
-import { DataGrid, GridColDef } from '@mui/x-data-grid'
+import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid'
 
 const columns: GridColDef[] = [
   {
@@ -55,6 +55,9 @@ function StockPortfolioComponent() {
       <DataGrid
         rows={mapped_stock_prices}
         columns={columns}
+        slots={{
+          toolbar: GridToolbar,
+        }}
         initialState={{
           sorting: {
             sortModel: [{ field: 'stock_id', sort: 'asc' }],

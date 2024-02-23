@@ -3,6 +3,7 @@ import Home from './Home'
 import Login from './Login'
 import User from './User'
 import StockDetails from './StockDetails'
+import Wallet from './Wallet'
 
 const Router = () => {
   return (
@@ -11,6 +12,7 @@ const Router = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/user" element={<User />} />
       <Route path="/stock-details" element={<StockDetails />} />
+      <Route path="/my-wallet" element={<Wallet />} />
     </Routes>
   )
 }

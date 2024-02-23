@@ -60,7 +60,7 @@ function User() {
               <Button
                 variant="contained"
                 color="primary"
-                href="/wallet-transactions"
+                href="/my-wallet"
                 sx={{ marginLeft: 1 }}
               >
                 My Wallet
