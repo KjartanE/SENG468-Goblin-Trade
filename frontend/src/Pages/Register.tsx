@@ -30,18 +30,17 @@ function Register() {
     username: string
     name: string
     password: string
-    password2: string
+    // password2: string
   }) => {
     try {
       const userRegisterData = {
         username: registerDetails.username,
-        name: registerDetails.name, // Authcontext asks for  email instead of name atm
+        name: registerDetails.name,
         password1: registerDetails.password,
-        password2: registerDetails.password2,
+        // password2: registerDetails.password2,
       }
       console.log('attempting to send register details')
       const user = await authContext.register(userRegisterData)
-      
       if (user) {
         navigate('/login')
       }
