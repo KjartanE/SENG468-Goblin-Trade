@@ -7,10 +7,10 @@ import React, {
 } from 'react'
 import { useAuth } from './AuthContext'
 import { useApi } from './ApiContext'
-import { StockTransaction } from '../types/stocks'
+import { IStockTransaction } from '../types/stocks'
 
 type StockTransactionsType = {
-  stock_transactions: StockTransaction[]
+  stock_transactions: IStockTransaction[]
 }
 
 const stockTransactionsContextDefaultValues: StockTransactionsType = {
@@ -31,7 +31,7 @@ export function StockTransactionsProvider({
   children: ReactNode
 }) {
   const [stock_transactions, setStockTransactions] = useState<
-    StockTransaction[]
+    IStockTransaction[]
   >([])
   const authContext = useAuth()
   const api = useApi()

@@ -7,10 +7,10 @@ import React, {
 } from 'react'
 import { useAuth } from './AuthContext'
 import { useApi } from './ApiContext'
-import { Stock } from '../types/stocks'
+import { IStock } from '../types/stocks'
 
 type StockPricesType = {
-  stock_prices: Stock[]
+  stock_prices: IStock[]
 }
 
 const stockPricesContextDefaultValues: StockPricesType = {
@@ -26,7 +26,7 @@ export function useStockPrices() {
 }
 
 export function StockPricesProvider({ children }: { children: ReactNode }) {
-  const [stock_prices, setStockPrices] = useState<Stock[]>([])
+  const [stock_prices, setStockPrices] = useState<IStock[]>([])
   const authContext = useAuth()
   const api = useApi()
 

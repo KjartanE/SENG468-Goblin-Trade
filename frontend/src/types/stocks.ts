@@ -1,7 +1,7 @@
 /**
  * A stock with its details and current price
  */
-export interface Stock {
+export interface IStock {
   stock_id?: number
   stock_name: string
   current_price: number
@@ -19,7 +19,7 @@ export interface StockPortfolio {
 /**
  * A transaction 
  */
-export interface StockTransaction {
+export interface IStockTransaction {
   stock_tx_id?: string
   wallet_tx_id?: string
   stock_id?: number
