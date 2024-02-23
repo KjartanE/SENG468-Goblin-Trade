@@ -17,7 +17,7 @@ export interface IStockPortfolio {
 }
 
 /**
- * A transaction 
+ * A stock transaction
  */
 export interface IStockTransaction {
   stock_tx_id?: string

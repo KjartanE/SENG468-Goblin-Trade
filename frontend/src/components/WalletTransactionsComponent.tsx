@@ -1,6 +1,6 @@
 import { useWalletTransactions } from '../contexts/WalletTransactionsContext'
 import Box from '@mui/material/Box'
-import { DataGrid, GridColDef } from '@mui/x-data-grid'
+import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid'
 
 const columns: GridColDef[] = [
   {
@@ -60,6 +60,9 @@ function WalletTransactionsComponent() {
       <DataGrid
         rows={mapped_wallet_transactions}
         columns={columns}
+        slots={{
+          toolbar: GridToolbar,
+        }}
         initialState={{
           sorting: {
             sortModel: [{ field: 'time_stamp', sort: 'asc' }],
