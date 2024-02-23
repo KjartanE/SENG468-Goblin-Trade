@@ -6,10 +6,11 @@ import React, {
   ReactNode,
 } from 'react'
 import { useAuth } from './AuthContext'
-import { StockTransactions } from '../types/stocks'
+import { useApi } from './ApiContext'
+import { StockTransaction } from '../types/stocks'
 
 type StockTransactionsType = {
-  stock_transactions: StockTransactions[]
+  stock_transactions: StockTransaction[]
 }
 
 const stockTransactionsContextDefaultValues: StockTransactionsType = {
@@ -30,30 +31,24 @@ export function StockTransactionsProvider({
   children: ReactNode
 }) {
   const [stock_transactions, setStockTransactions] = useState<
-    StockTransactions[]
+    StockTransaction[]
   >([])
   const authContext = useAuth()
+  const api = useApi()
 
   useEffect(() => {
     const fetchStockTransactions = async () => {
       try {
-        const response = await fetch(
-          'http://localhost:8080/getstocktransactions',
-          {
-            method: 'GET',
-            headers: new Headers({
-              'Content-Type': 'application/json',
-              token: authContext.user?.token || '',
-            }),
-          }
-        )
-        const data = await response.json()
+        if (!authContext.user?.token) return
+
+        const data = await api.stocks.getStockTransactions()
         setStockTransactions(data)
       } catch (error) {
         console.error('Error:', error)
       }
     }
 
+    // Fetch stock transactions
     if (authContext.user?.token) {
       fetchStockTransactions()
     }

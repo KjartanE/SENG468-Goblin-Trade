@@ -19,7 +19,7 @@ export interface StockPortfolio {
 /**
  * A transaction 
  */
-export interface StockTransactions {
+export interface StockTransaction {
   stock_tx_id?: string
   wallet_tx_id?: string
   stock_id?: number

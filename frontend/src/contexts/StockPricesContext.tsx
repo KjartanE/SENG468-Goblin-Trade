@@ -6,6 +6,7 @@ import React, {
   ReactNode,
 } from 'react'
 import { useAuth } from './AuthContext'
+import { useApi } from './ApiContext'
 import { Stock } from '../types/stocks'
 
 type StockPricesType = {
@@ -27,24 +28,21 @@ export function useStockPrices() {
 export function StockPricesProvider({ children }: { children: ReactNode }) {
   const [stock_prices, setStockPrices] = useState<Stock[]>([])
   const authContext = useAuth()
+  const api = useApi()
 
   useEffect(() => {
     const fetchStockPrices = async () => {
       try {
-        const response = await fetch('http://localhost:8080/getstockprices', {
-          method: 'GET',
-          headers: new Headers({
-            'Content-Type': 'application/json',
-            token: authContext.user?.token || '',
-          }),
-        })
-        const data = await response.json()
+        if (!authContext.user?.token) return
+
+        const data = await api.stocks.getStockPrices()
         setStockPrices(data)
       } catch (error) {
         console.error('Error:', error)
       }
     }
 
+    // Fetch stock prices
     if (authContext.user?.token) {
       fetchStockPrices()
     }

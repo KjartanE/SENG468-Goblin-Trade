@@ -6,6 +6,7 @@ import React, {
   ReactNode,
 } from 'react'
 import { useAuth } from './AuthContext'
+import { useApi } from './ApiContext'
 import { StockPortfolio } from '../types/stocks'
 
 type StockPortfolioType = {
@@ -27,27 +28,21 @@ export function useStockPortfolio() {
 export function StockPortfolioProvider({ children }: { children: ReactNode }) {
   const [stock_portfolio, setStockPortfolio] = useState<StockPortfolio[]>([])
   const authContext = useAuth()
+  const api = useApi()
 
   useEffect(() => {
     const fetchStockPortfolio = async () => {
       try {
-        const response = await fetch(
-          'http://localhost:8080/getstockportfolio',
-          {
-            method: 'GET',
-            headers: new Headers({
-              'Content-Type': 'application/json',
-              token: authContext.user?.token || '',
-            }),
-          }
-        )
-        const data = await response.json()
+        if (!authContext.user?.token) return
+
+        const data = await api.stocks.getStockPortfolio()
         setStockPortfolio(data)
       } catch (error) {
         console.error('Error:', error)
       }
     }
 
+    // Fetch stock portfolio
     if (authContext.user?.token) {
       fetchStockPortfolio()
     }
