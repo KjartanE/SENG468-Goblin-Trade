@@ -32,9 +32,14 @@ const Sidebar: React.FC<SidebarProps> = ({
           </>
         ) : (
           // Not authenticated options
-          <ListItem button onClick={() => navigate('/register')}>
-            <ListItemText primary="Register" />
-          </ListItem>
+          <>
+            <ListItem button onClick={() => navigate('/Login')}>
+              <ListItemText primary="Login" />
+            </ListItem>
+            <ListItem button onClick={() => navigate('/register')}>
+              <ListItemText primary="Register" />
+            </ListItem>
+          </>
         )}
       </List>
     </Drawer>

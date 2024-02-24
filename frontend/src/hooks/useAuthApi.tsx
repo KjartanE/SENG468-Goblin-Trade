@@ -31,10 +31,15 @@ const useAuthApi = (axios: AxiosInstance) => {
    * @return {*}  {Promise<string>}
    */
   const register = async (
-    username: string,
-    password: string
+    user_name: string,
+    password: string,
+    name: string
   ): Promise<string> => {
-    const { data } = await axios.post('/register', { username, password })
+    const { data } = await axios.post('/register', {
+      user_name,
+      password,
+      name,
+    })
 
     return data
   }

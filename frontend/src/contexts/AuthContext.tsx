@@ -18,9 +18,9 @@ export type authContextType = {
 
 export interface userRegister {
   username: string
-  email: string
+  name: string
   password1: string
-  password2: string
+  // password2: string
 }
 
 const authContextDefaultValues: authContextType = {
@@ -114,9 +114,9 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
   const register = async (signupDetails: userRegister) => {
     const response = await api.auth.register(
       signupDetails.username,
-      signupDetails.password1
+      signupDetails.password1,
+      signupDetails.name
     )
-
     if (response) {
       router('/user/login')
 

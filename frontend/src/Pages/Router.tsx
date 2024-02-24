@@ -4,6 +4,7 @@ import Login from './Login'
 import User from './User'
 import StockDetails from './StockDetails'
 import Wallet from './Wallet'
+import Register from './Register'
 
 const Router = () => {
   return (
@@ -13,6 +14,7 @@ const Router = () => {
       <Route path="/user" element={<User />} />
       <Route path="/stock-details" element={<StockDetails />} />
       <Route path="/my-wallet" element={<Wallet />} />
+      <Route path="/register" element={<Register />} />
     </Routes>
   )
 }

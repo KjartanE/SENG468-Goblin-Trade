@@ -35,6 +35,10 @@ function StockPortfolioComponent() {
     return <Box>Loading...</Box>
   }
 
+  if (!stock_portfolio.length) {
+    return <Box>No stocks owned.</Box>
+  }
+
   // Map retrieved list of objects to stock portfolio
   const mapped_stock_prices = stock_portfolio.map(
     (StockPortfolio: any, index: number) => ({
