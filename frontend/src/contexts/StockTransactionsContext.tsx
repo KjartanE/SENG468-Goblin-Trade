@@ -7,14 +7,18 @@ import React, {
 } from 'react'
 import { useAuth } from './AuthContext'
 import { useApi } from './ApiContext'
-import { IStockTransaction } from '../types/stocks'
+import { IStockOrderForm, IStockTransaction } from '../types/stocks'
 
 type StockTransactionsType = {
   stock_transactions: IStockTransaction[]
+  placeStockOrder: (order: IStockOrderForm) => void
 }
 
 const stockTransactionsContextDefaultValues: StockTransactionsType = {
   stock_transactions: [],
+  placeStockOrder: () => {
+    null
+  },
 }
 
 const StockTransactionsContext = createContext<StockTransactionsType>(
@@ -54,8 +58,24 @@ export function StockTransactionsProvider({
     }
   }, [authContext.user?.token])
 
+  const placeStockOrder = async (order: IStockOrderForm) => {
+    try {
+      if (!authContext.user?.token) return
+
+      // JSON stringify order
+      const orderString = JSON.stringify(order)
+
+      console.log(orderString)
+      const data = await api.stocks.placeStockOrder(orderString)
+      console.log(data)
+    } catch (error) {
+      console.error('Error:', error)
+    }
+  }
+
   const value = {
     stock_transactions,
+    placeStockOrder,
   }
 
   return (

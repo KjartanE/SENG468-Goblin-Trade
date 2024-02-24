@@ -1,7 +1,10 @@
 import { AxiosInstance } from 'axios'
 import { IStock } from '../types/stocks'
-import { IStockPortfolio } from '../types/stocks'
-import { IStockTransaction } from '../types/stocks'
+import {
+  IStockPortfolio,
+  IStockTransaction,
+  IStockOrderForm,
+} from '../types/stocks'
 
 /**
  * Stock API
@@ -46,10 +49,25 @@ const useStockAPI = (axios: AxiosInstance) => {
     return data
   }
 
+  /**
+   * Place a stock order
+   *
+   * @param {IStockOrderForm} order
+   * @returns {*} Promise
+   */
+  const placeStockOrder = async (order: string): Promise<IStockOrderForm> => {
+    const { data } = await axios.post('/addMoney', {
+      order,
+    })
+
+    return data
+  }
+
   return {
     getStockPrices,
     getStockPortfolio,
     getStockTransactions,
+    placeStockOrder,
   }
 }
 

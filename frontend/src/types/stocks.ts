@@ -33,12 +33,12 @@ export interface IStockTransaction {
 }
 
 /**
- * Form values for a buy or sell stock order
+ * Form for a buy or sell stock order
  */
-export interface IOrderFormValues {
-  stock_id: number | '';
-  is_buy: boolean | '';
-  order_type: string | '';
-  quantity: number | '';
-  price: number | '';
+export interface IStockOrderForm {
+  "stock_id": number | '';
+  "is_buy": boolean | '';
+  "order_type": string | '';
+  "quantity": number | '';
+  "price": number | '';
 }

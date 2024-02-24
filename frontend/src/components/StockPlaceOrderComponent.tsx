@@ -1,6 +1,7 @@
 import { Formik, Form } from 'formik'
-import { IOrderFormValues } from '../types/stocks'
+import { IStockOrderForm } from '../types/stocks'
 import { MenuItem, Button, TextField } from '@mui/material'
+import { useStockTransactions } from '../contexts/StockTransactionsContext'
 import * as Yup from 'yup'
 
 const placeOrderSchema = Yup.object().shape({
@@ -18,7 +19,7 @@ const placeOrderSchema = Yup.object().shape({
   }),
 })
 
-const initialValues: IOrderFormValues = {
+const initialValues: IStockOrderForm = {
   stock_id: '',
   is_buy: '',
   order_type: '',
@@ -27,12 +28,14 @@ const initialValues: IOrderFormValues = {
 }
 
 function StockPlaceOrderComponent() {
+  const { stock_transactions, placeStockOrder } = useStockTransactions()
+
   return (
     <Formik
       initialValues={initialValues}
       onSubmit={values => {
         // Handle form submission here
-        console.log(values)
+        placeStockOrder(values)
       }}
       validationSchema={placeOrderSchema}
     >
@@ -52,6 +55,7 @@ function StockPlaceOrderComponent() {
                 errors.stock_id && touched.stock_id && errors.stock_id
               }
             >
+              {/* Hard coded stock IDs - Can pass in real IDs from API later if needed*/}
               {[...Array(20)].map((_, index) => (
                 <MenuItem key={index + 1} value={index + 1}>
                   {index + 1}
@@ -69,8 +73,8 @@ function StockPlaceOrderComponent() {
               defaultValue=""
               helperText={errors.is_buy && touched.is_buy && errors.is_buy}
             >
-              <MenuItem value="true">Buy</MenuItem>
-              <MenuItem value="false">Sell</MenuItem>
+              <MenuItem value={true as any}>Buy</MenuItem>
+              <MenuItem value={false as any}>Sell</MenuItem>
             </TextField>
 
             <TextField
