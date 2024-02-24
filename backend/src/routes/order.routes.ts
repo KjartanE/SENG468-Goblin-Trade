@@ -64,4 +64,32 @@ const getStockTransactions = async (req, res) => {
 }
 router.get('/getStockTransactions', getStockTransactions)
 
+/**
+ * Cancel a stock order
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+const cancelStockTransaction = async (req, res) => {
+  try {
+    await handleToken(req, res)
+
+    const stockOrder = req.body
+
+    if (!stockOrder.stock_tx_id) {
+      res.status(400).send({
+        message: 'stock_tx_id is a required field.',
+      })
+      return
+    }
+
+    await orderController.cancelStockOrder(stockOrder.stock_tx_id)
+
+    res.status(200).send()
+  } catch (err) {
+    res.status(401).send({ message: err })
+  }
+}
+router.post('/cancelStockTransaction', cancelStockTransaction)
+
 module.exports = router

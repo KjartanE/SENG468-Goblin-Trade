@@ -33,6 +33,7 @@ export interface StockOrder {
   order_type: OrderType
   quantity: number
   price: number
+  cancel_order?: boolean
 }
 
 export const stockTXSchema = new Schema<IStockTX>(
