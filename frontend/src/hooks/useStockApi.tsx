@@ -55,10 +55,8 @@ const useStockAPI = (axios: AxiosInstance) => {
    * @param {IStockOrderForm} order
    * @returns {*} Promise
    */
-  const placeStockOrder = async (order: string): Promise<IStockOrderForm> => {
-    const { data } = await axios.post('/addMoney', {
-      order,
-    })
+  const placeStockOrder = async (order: IStockOrderForm): Promise<null> => {
+    const { data } = await axios.post('/placeStockOrder', order)
 
     return data
   }

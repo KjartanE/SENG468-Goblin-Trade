@@ -24,6 +24,16 @@ const columns: GridColDef[] = [
     width: 150,
   },
   {
+    field: 'is_buy',
+    headerName: 'Is Buy',
+    width: 100,
+  },
+  {
+    field: 'order_type',
+    headerName: 'Order Type',
+    width: 100,
+  },
+  {
     field: 'stock_price',
     headerName: 'Stock Price',
     width: 150,
@@ -80,7 +90,7 @@ function StockTransactionsComponent() {
         }}
         initialState={{
           sorting: {
-            sortModel: [{ field: 'stock_id', sort: 'asc' }],
+            sortModel: [{ field: 'time_stamp', sort: 'desc' }],
           },
           pagination: {
             paginationModel: {

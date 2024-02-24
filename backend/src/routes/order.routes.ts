@@ -22,15 +22,15 @@ const placeStockOrder = async (req, res) => {
     const stockOrder = req.body
 
     if (
-      !stockOrder.stock_id ||
-      !stockOrder.is_buy ||
-      !stockOrder.order_type ||
-      !stockOrder.quantity ||
-      !stockOrder.price
+      (!stockOrder.stock_id || !stockOrder.is_buy || !stockOrder.order_type || !stockOrder.quantity) ||
+      (stockOrder.order_type=="LIMIT" && !stockOrder.price) ||
+      (stockOrder.order_type=="MARKET" && stockOrder.price)
     ) {
       res.status(400).send({
         message:
-          'stock_id, is_buy, order_type, quantity, and price are required fields.',
+          `stock_id, is_buy, order_type, and quantity are required fields.
+          When the order_type is LIMIT, the price field is required.
+          When the order_type is MARKET, the price field must be null.`
       })
       return
     }

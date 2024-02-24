@@ -43,7 +43,7 @@ export const stockTXSchema = new Schema<IStockTX>(
     order_status: { type: String, required: true },
     is_buy: { type: Boolean, required: true },
     order_type: { type: String, required: true },
-    stock_price: { type: Number, required: true },
+    stock_price: { type: Number, required: false },
     quantity: { type: Number, required: true },
     time_stamp: { type: Date, required: true },
   },

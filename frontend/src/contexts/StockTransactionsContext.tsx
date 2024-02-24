@@ -62,11 +62,7 @@ export function StockTransactionsProvider({
     try {
       if (!authContext.user?.token) return
 
-      // JSON stringify order
-      const orderString = JSON.stringify(order)
-
-      console.log(orderString)
-      const data = await api.stocks.placeStockOrder(orderString)
+      const data = await api.stocks.placeStockOrder(order)
       console.log(data)
     } catch (error) {
       console.error('Error:', error)
