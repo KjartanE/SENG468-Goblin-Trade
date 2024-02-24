@@ -37,7 +37,7 @@ export interface IStockTransaction {
  */
 export interface IOrderFormValues {
   stock_id: number | '';
-  is_buy: 'true' | 'false' | '';
+  is_buy: boolean | '';
   order_type: string | '';
   quantity: number | '';
   price: number | '';
