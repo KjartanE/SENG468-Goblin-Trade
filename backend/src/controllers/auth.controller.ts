@@ -1,8 +1,12 @@
 import { comparePassword } from '../helpers/auth'
+import { create_wallet } from '../helpers/db'
 import type { IUser } from '../models/user.model'
+import type { IWallet } from '../models/wallet.model'
 import jwt from 'jsonwebtoken'
+import { WalletController } from './wallet.controller'
 
 const User = require('../models/user.model')
+const Wallet = require('../models/wallet.model')
 
 /**
  * Auth Controller
@@ -133,6 +137,18 @@ export class AuthController {
       password,
       name,
       token: jwtToken,
+    })
+
+    const newWalletData: IWallet[] = [
+      { user_name: user_name, balance: 0 },
+    ]
+
+    Wallet.create(newWalletData)
+    .then(() => {
+      console.log('Wallet for ' + user_name + ' created!')
+    })
+    .catch(err => {
+      console.log('Error creating new wallet!', err)
     })
 
     return newUser

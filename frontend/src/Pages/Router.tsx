@@ -6,7 +6,6 @@ import StockDetails from './StockDetails'
 import Wallet from './Wallet'
 import Register from './Register'
 
-
 const Router = () => {
   return (
     <Routes>
