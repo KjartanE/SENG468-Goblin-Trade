@@ -22,13 +22,15 @@ function PlaceOrder() {
                 mb: 5,
               }}
             >
-              <Typography variant="h2" gutterBottom>
+              <Typography variant="h2" mb={8}>
                 Place Stock Order
               </Typography>
               <StockPlaceOrderComponent />
-              <Button variant="contained" color="primary" href="/user">
-                Back
-              </Button>
+              <Box mt={4}>
+                <Button variant="contained" color="primary" href="/user">
+                  Back
+                </Button>
+              </Box>
             </Box>
           </div>
         ) : (

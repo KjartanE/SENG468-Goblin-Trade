@@ -11,11 +11,13 @@ import { IStockOrderForm, IStockTransaction } from '../types/stocks'
 
 type StockTransactionsType = {
   stock_transactions: IStockTransaction[]
+  orderErrors: string
   placeStockOrder: (order: IStockOrderForm) => void
 }
 
 const stockTransactionsContextDefaultValues: StockTransactionsType = {
   stock_transactions: [],
+  orderErrors: '',
   placeStockOrder: () => {
     null
   },
@@ -39,6 +41,7 @@ export function StockTransactionsProvider({
   >([])
   const authContext = useAuth()
   const api = useApi()
+  const [orderErrors, setOrderErrors] = useState<''>('')
 
   useEffect(() => {
     const fetchStockTransactions = async () => {
@@ -63,7 +66,11 @@ export function StockTransactionsProvider({
       if (!authContext.user?.token) return
 
       const data = await api.stocks.placeStockOrder(order)
-      console.log(data)
+
+      // If response is not empty, then an error occured.
+      if (data) {
+        setOrderErrors(orderErrors)
+      }
     } catch (error) {
       console.error('Error:', error)
     }
@@ -71,6 +78,7 @@ export function StockTransactionsProvider({
 
   const value = {
     stock_transactions,
+    orderErrors,
     placeStockOrder,
   }
 

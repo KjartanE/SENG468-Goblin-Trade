@@ -22,7 +22,7 @@ const placeStockOrder = async (req, res) => {
     const stockOrder = req.body
 
     if (
-      (!stockOrder.stock_id || !stockOrder.is_buy || !stockOrder.order_type || !stockOrder.quantity) ||
+      (!stockOrder.stock_id || ((stockOrder.is_buy != true) && (stockOrder.is_buy != false)) || !stockOrder.order_type || !stockOrder.quantity) ||
       (stockOrder.order_type=="LIMIT" && !stockOrder.price) ||
       (stockOrder.order_type=="MARKET" && stockOrder.price)
     ) {
