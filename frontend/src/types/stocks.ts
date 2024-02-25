@@ -31,3 +31,14 @@ export interface IStockTransaction {
   time_stamp?: string
   __v?: number
 }
+
+/**
+ * Form for a buy or sell stock order
+ */
+export interface IStockOrderForm {
+  "stock_id": number | '';
+  "is_buy": boolean | '';
+  "order_type": string | '';
+  "quantity": number | '';
+  "price": number | '';
+}

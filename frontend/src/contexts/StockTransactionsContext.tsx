@@ -7,14 +7,20 @@ import React, {
 } from 'react'
 import { useAuth } from './AuthContext'
 import { useApi } from './ApiContext'
-import { IStockTransaction } from '../types/stocks'
+import { IStockOrderForm, IStockTransaction } from '../types/stocks'
 
 type StockTransactionsType = {
   stock_transactions: IStockTransaction[]
+  orderErrors: string
+  placeStockOrder: (order: IStockOrderForm) => void
 }
 
 const stockTransactionsContextDefaultValues: StockTransactionsType = {
   stock_transactions: [],
+  orderErrors: '',
+  placeStockOrder: () => {
+    null
+  },
 }
 
 const StockTransactionsContext = createContext<StockTransactionsType>(
@@ -35,11 +41,14 @@ export function StockTransactionsProvider({
   >([])
   const authContext = useAuth()
   const api = useApi()
+  const [orderErrors, setOrderErrors] = useState<''>('')
 
   useEffect(() => {
     const fetchStockTransactions = async () => {
       try {
         if (!authContext.user?.token) return
+
+        console.log(authContext.user.name)
 
         const data = await api.stocks.getStockTransactions()
         setStockTransactions(data)
@@ -54,8 +63,27 @@ export function StockTransactionsProvider({
     }
   }, [authContext.user?.token])
 
+  const placeStockOrder = async (order: IStockOrderForm) => {
+    try {
+      if (!authContext.user?.token) return
+
+      const data = await api.stocks.placeStockOrder(order)
+
+      // If response is not empty, then an error occured.
+      if (data) {
+        setOrderErrors(data)
+      } else {
+        setOrderErrors('')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+    }
+  }
+
   const value = {
     stock_transactions,
+    orderErrors,
+    placeStockOrder,
   }
 
   return (

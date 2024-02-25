@@ -52,10 +52,10 @@ function User() {
               <Button
                 variant="contained"
                 color="primary"
-                href="/stock-transactions"
+                href="/place-order"
                 sx={{ marginLeft: 1 }}
               >
-                Trade Stocks
+                Place Order
               </Button>
               <Button
                 variant="contained"
