@@ -48,6 +48,8 @@ export function StockTransactionsProvider({
       try {
         if (!authContext.user?.token) return
 
+        console.log(authContext.user.name)
+
         const data = await api.stocks.getStockTransactions()
         setStockTransactions(data)
       } catch (error) {
@@ -69,7 +71,9 @@ export function StockTransactionsProvider({
 
       // If response is not empty, then an error occured.
       if (data) {
-        setOrderErrors(orderErrors)
+        setOrderErrors(data)
+      } else {
+        setOrderErrors('')
       }
     } catch (error) {
       console.error('Error:', error)
