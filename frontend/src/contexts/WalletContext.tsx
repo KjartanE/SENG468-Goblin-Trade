@@ -12,12 +12,14 @@ import { IWallet } from '@/types/wallet'
 
 type WalletContextType = {
   wallet: IWallet | null
+  addFundsError: boolean
   refreshWallet: () => void
   updateWallet: (amount: number) => void
 }
 
 const walletContextDefaultValues: WalletContextType = {
   wallet: null,
+  addFundsError: false,
   refreshWallet: () => {
     null
   },
@@ -40,7 +42,7 @@ interface WalletProviderProps {
 
 export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const [wallet, setWalletBalance] = useState<IWallet | null>(null)
-
+  const [addFundsError, setAddFundErrors] = useState<boolean>(false)
   const authContext = useAuth()
   const api = useApi()
 
@@ -71,13 +73,19 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       await api.wallet.updateWalletBalance(amount)
       fetchWalletBalance()
     } catch (error) {
+      setAddFundErrors(true)
       console.error('Error:', error)
     }
   }
 
+  const values = {
+    wallet,
+    addFundsError,
+    refreshWallet,
+    updateWallet,
+  }
+
   return (
-    <WalletContext.Provider value={{ wallet, refreshWallet, updateWallet }}>
-      {children}
-    </WalletContext.Provider>
+    <WalletContext.Provider value={values}>{children}</WalletContext.Provider>
   )
 }
