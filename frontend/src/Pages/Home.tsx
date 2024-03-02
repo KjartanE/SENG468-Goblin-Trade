@@ -1,5 +1,6 @@
 import React from 'react'
 import './App.css'
+import { Typography } from '@mui/material'
 
 function Home() {
   return (
@@ -13,11 +14,13 @@ function Home() {
           alt="logo"
           width={1000}
         />
-        <p>GOBLIN TRADE</p>
+        <Typography variant="h3" mt={6} mb={2} gutterBottom>
+          Goblin Trade
+        </Typography>
         <img
           src="/gt_logo.png"
           alt="Logo"
-          style={{ margin: 50, width: '150px' }}
+          style={{ marginBottom: 30, width: '150px' }}
         />
       </header>
     </div>
