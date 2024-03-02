@@ -14,6 +14,11 @@ function Home() {
           width={1000}
         />
         <p>GOBLIN TRADE</p>
+        <img
+          src="/gt_logo.png"
+          alt="Logo"
+          style={{ margin: 50, width: '150px' }}
+        />
       </header>
     </div>
   )
