@@ -78,13 +78,13 @@ const Navbar: React.FC = () => {
           isAuthenticated={!!user}
         />
         <img
-          src="../../public/logo.png"
+          src="/gt_logo.png"
           alt="Logo"
           onClick={handleLogoClick}
           style={{
             cursor: 'pointer',
             position: 'absolute',
-            width: '120px',
+            width: '50px',
             left: '50%',
             top: '50%',
             transform: 'translate(-50%, -50%)',

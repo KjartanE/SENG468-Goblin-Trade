@@ -7,6 +7,7 @@ import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import { useState } from 'react'
 import WalletTransactionsComponent from '../components/WalletTransactionsComponent'
+import WalletAddFundsComponent from '../components/WalletAddFundsCompoonent'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -79,17 +80,12 @@ function Wallet() {
                 </Tabs>
               </Box>
               <CustomTabPanel value={which_table} index={0}>
-                {'Coming soon...'}
+                <WalletAddFundsComponent />
               </CustomTabPanel>
               <CustomTabPanel value={which_table} index={1}>
                 <WalletTransactionsComponent />
               </CustomTabPanel>
-              <Button
-                variant="contained"
-                color="primary"
-                href="/user"
-                sx={{ marginLeft: 1 }}
-              >
+              <Button variant="contained" color="primary" href="/user">
                 Back
               </Button>
             </Box>

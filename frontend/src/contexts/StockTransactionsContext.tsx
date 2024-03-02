@@ -48,8 +48,6 @@ export function StockTransactionsProvider({
       try {
         if (!authContext.user?.token) return
 
-        console.log(authContext.user.name)
-
         const data = await api.stocks.getStockTransactions()
         setStockTransactions(data)
       } catch (error) {
