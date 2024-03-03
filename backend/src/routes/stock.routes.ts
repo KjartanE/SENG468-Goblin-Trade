@@ -37,7 +37,6 @@ router.get('/getstockprices', getStockPrices)
 const getStockPortfolio = async (req, res) => {
   try {
     const auth = await handleToken(req, res)
-    console.log('auth', auth)
 
     const response = await stockController.getStockPortfolio(auth.user_name)
 

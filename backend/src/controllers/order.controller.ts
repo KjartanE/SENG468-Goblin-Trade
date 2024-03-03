@@ -44,7 +44,8 @@ export class OrderController {
 
     // Create Wallet Transaction
     await this.walletController.createWalletTx(
-      stockOrder,
+      stockOrder.is_buy,
+      amount,
       stockTxId,
       walletTxId
     )
@@ -85,6 +86,37 @@ export class OrderController {
 
     const stockTxModel = new StockTx(stockTx)
     await stockTxModel.save()
+  }
+
+  /**
+   * Cancel Stock Order
+   *
+   * @param {string} stockTxId
+   * @return {*}  {Promise<void>}
+   * @memberof OrderController
+   */
+  async cancelStockOrder(stockTxId: string): Promise<void> {
+    // Check if Stock Transaction exists
+    const stockTx = await StockTx.findOne({ stock_tx_id: stockTxId })
+    if (!stockTx) {
+      throw new Error('Invalid Stock Transaction ID')
+    }
+
+    // Queue Stock Order to cancel
+    const StockCancelOrder = {
+      ...stockTx,
+      cancel_order: true,
+    }
+    await this.queueStockOrder(StockCancelOrder)
+
+    // Update Stock Transaction
+    if (stockTx.order_status === 'PENDING') {
+      stockTx.order_status = 'CANCELLED'
+      await stockTx.save()
+
+      // return money to wallet
+      await this.walletController.returnMoneyToWallet(stockTx)
+    }
   }
 
   /**

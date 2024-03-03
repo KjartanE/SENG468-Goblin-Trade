@@ -1,5 +1,6 @@
-import { StockOrder } from '../models/stock_tx.model'
+import { IStockTX } from '../models/stock_tx.model'
 import { IWallet } from '../models/wallet.model'
+import { v4 as uuid } from 'uuid'
 
 const Wallet = require('../models/wallet.model')
 const WalletTx = require('../models/wallet_tx.model')
@@ -40,7 +41,14 @@ export class WalletController {
   async addMoneyToWallet(user_name: string, amount: number): Promise<IWallet> {
     const wallet = await Wallet.findOne({ user_name: user_name })
     wallet.balance = wallet.balance + amount
-    wallet.save()
+
+    //create wallet transaction
+    const walletTxId = await uuid()
+    await this.createWalletTx(true, amount, null, walletTxId)
+
+    // Update Wallet Transactions in Wallet
+    await this.updateWalletTransactions(user_name, walletTxId)
+    await wallet.save()
 
     return wallet
   }
@@ -76,18 +84,19 @@ export class WalletController {
   /**
    * Create Wallet Transaction
    *
-   * @param {StockOrder} stockOrder
-   * @param {string} stockTxId
+   * @param {boolean} isDebit
+   * @param {number} amount
+   * @param {(string | null)} stockTxId
+   * @param {string} walletTxId
    * @return {*}  {Promise<void>}
-   * @memberof OrderController
+   * @memberof WalletController
    */
   async createWalletTx(
-    stockOrder: StockOrder,
-    stockTxId: string,
+    isDebit: boolean,
+    amount: number,
+    stockTxId: string | null,
     walletTxId: string
   ): Promise<void> {
-    const isDebit = stockOrder.is_buy
-    const amount = stockOrder.price * stockOrder.quantity
     const walletTx = {
       wallet_tx_id: walletTxId,
       stock_tx_id: stockTxId,
@@ -110,5 +119,36 @@ export class WalletController {
   async getWalletTransactionsByTXIds(txIds: string[]): Promise<string[]> {
     const walletTx = await WalletTx.find({ wallet_tx_id: { $in: txIds } })
     return walletTx
+  }
+
+  /**
+   * Return Money to Wallet
+   *
+   * @param {IStockTX} stockTx
+   * @return {*}  {Promise<void>}
+   * @memberof WalletController
+   */
+  async returnMoneyToWallet(stockTx: IStockTX): Promise<void> {
+    // Get Wallet Transaction
+    const walletTx = await WalletTx.findOne({
+      stock_tx_id: stockTx.stock_tx_id,
+    })
+
+    // Update Wallet Balance
+    if (walletTx.is_debit) {
+      await this.addMoneyToWallet(walletTx.user_name, walletTx.amount)
+    }
+
+    // new Wallet Transactions in Wallet for the returned amount
+    const walletTxId = await uuid()
+    await this.createWalletTx(
+      false,
+      walletTx.amount,
+      stockTx.stock_tx_id,
+      walletTxId
+    )
+
+    // Update Wallet Transactions in Wallet
+    await this.updateWalletTransactions(walletTx.user_name, walletTxId)
   }
 }
