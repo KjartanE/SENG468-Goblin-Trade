@@ -23,7 +23,7 @@ const useStockAPI = (axios: AxiosInstance) => {
   const getStockPrices = async (): Promise<IStock[]> => {
     const { data } = await axios.get('/getStockPrices')
 
-    return data
+    return data.data
   }
 
   /**
@@ -35,7 +35,7 @@ const useStockAPI = (axios: AxiosInstance) => {
   const getStockPortfolio = async (): Promise<IStockPortfolio[]> => {
     const { data } = await axios.get('/getStockPortfolio')
 
-    return data
+    return data.data
   }
 
   /**
@@ -46,7 +46,7 @@ const useStockAPI = (axios: AxiosInstance) => {
   const getStockTransactions = async (): Promise<IStockTransaction[]> => {
     const { data } = await axios.get('/getStockTransactions')
 
-    return data
+    return data.data
   }
 
   /**
@@ -58,7 +58,7 @@ const useStockAPI = (axios: AxiosInstance) => {
   const placeStockOrder = async (order: IStockOrderForm): Promise<null> => {
     const { data } = await axios.post('/placeStockOrder', order)
 
-    return data
+    return data.data
   }
 
   return {

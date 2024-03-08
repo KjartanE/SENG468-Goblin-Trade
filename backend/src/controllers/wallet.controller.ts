@@ -1,6 +1,7 @@
 import { IStockTX } from '../models/stock_tx.model'
 import { IWallet } from '../models/wallet.model'
 import { v4 as uuid } from 'uuid'
+import { IWalletTX } from '../models/wallet_tx.model'
 
 const Wallet = require('../models/wallet.model')
 const WalletTx = require('../models/wallet_tx.model')
@@ -13,21 +14,20 @@ const WalletTx = require('../models/wallet_tx.model')
  */
 export class WalletController {
   /**
-   * get user Wallet Balance
+   * Get Wallet Balance
    *
-   * @return {*}  {Promise<IWallet[]>}
+   * @param {string} user_name
+   * @return {*}  {Promise<IWallet>}
    * @memberof WalletController
    */
-  async getWalletBalance(user_name: string): Promise<IWallet> {
-    const walletBalance = await Wallet.findOne({ user_name: user_name }).select(
-      'user_name balance'
-    )
+  async getWallet(user_name: string): Promise<IWallet> {
+    const wallet = await Wallet.findOne({ user_name: user_name })
 
-    if (!walletBalance) {
-      throw new Error('There was no wallet found.')
+    if (!wallet) {
+      throw new Error('Wallet not found.')
     }
 
-    return walletBalance
+    return wallet
   }
 
   /**
@@ -40,6 +40,11 @@ export class WalletController {
    */
   async addMoneyToWallet(user_name: string, amount: number): Promise<IWallet> {
     const wallet = await Wallet.findOne({ user_name: user_name })
+
+    if (!wallet) {
+      throw new Error('Wallet not found.')
+    }
+
     wallet.balance = wallet.balance + amount
 
     //create wallet transaction
@@ -67,18 +72,6 @@ export class WalletController {
     const wallet = await Wallet.findOne({ user_name: user_name })
     wallet.transactions.push(wallet_tx_id)
     wallet.save()
-  }
-
-  /**
-   * Get Wallet Transactions
-   *
-   * @param {string} user_name
-   * @return {*}
-   * @memberof WalletController
-   */
-  async getWalletTransactions(user_name: string): Promise<string[]> {
-    const wallet = await Wallet.findOne({ user_name: user_name })
-    return wallet.transactions
   }
 
   /**
@@ -113,12 +106,43 @@ export class WalletController {
    * Get Wallet Transactions by TXIds
    *
    * @param {string[]} txIds
-   * @return {*}  {Promise<string[]>}
+   * @return {*}  {Promise<IWalletTX[]>}
    * @memberof WalletController
    */
-  async getWalletTransactionsByTXIds(txIds: string[]): Promise<string[]> {
-    const walletTx = await WalletTx.find({ wallet_tx_id: { $in: txIds } })
+  async getWalletTransactionsByUserName(
+    user_name: string
+  ): Promise<IWalletTX[]> {
+    const wallet = await this.getWallet(user_name)
+
+    const walletTx = await WalletTx.find({
+      wallet_tx_id: { $in: wallet.transactions },
+    })
+
     return walletTx
+  }
+
+  /**
+   * Get User Wallet by StockTx
+   *
+   * @param {IStockTX} stockTx
+   * @return {*}  {Promise<IWallet>}
+   * @memberof WalletController
+   */
+  async getUserWalletByStockTx(stockTx: IStockTX): Promise<IWallet> {
+    // Get Wallet Transaction
+    const walletTx = await WalletTx.findOne({
+      stock_tx_id: stockTx.stock_tx_id,
+    })
+
+    if (!walletTx) {
+      throw new Error('Wallet Transaction not found.')
+    }
+
+    const wallet = await Wallet.findOne({
+      transactions: walletTx.wallet_tx_id,
+    })
+
+    return wallet
   }
 
   /**
@@ -134,9 +158,13 @@ export class WalletController {
       stock_tx_id: stockTx.stock_tx_id,
     })
 
+    const wallet = await Wallet.findOne({
+      transactions: walletTx.wallet_tx_id,
+    })
+
     // Update Wallet Balance
     if (walletTx.is_debit) {
-      await this.addMoneyToWallet(walletTx.user_name, walletTx.amount)
+      await this.addMoneyToWallet(wallet.user_name, walletTx.amount)
     }
 
     // new Wallet Transactions in Wallet for the returned amount
@@ -149,6 +177,6 @@ export class WalletController {
     )
 
     // Update Wallet Transactions in Wallet
-    await this.updateWalletTransactions(walletTx.user_name, walletTxId)
+    await this.updateWalletTransactions(wallet.user_name, walletTxId)
   }
 }
