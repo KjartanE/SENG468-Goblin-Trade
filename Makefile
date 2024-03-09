@@ -10,13 +10,13 @@ build-web: ## Builds all backend+web containers
 	@echo "==============================================="
 	@echo "Make: build-web - building web images"
 	@echo "==============================================="
-	@docker-compose -f docker-compose.yml build frontend backend database rabbitmq matching_engine
+	@docker-compose -f docker-compose.yml build frontend backend database rabbitmq matching_engine nginx
 
 run-web: ## Runs all backend+web containers
 	@echo "==============================================="
 	@echo "Make: run-web - running web images"
 	@echo "==============================================="
-	@docker-compose -f docker-compose.yml up -d frontend backend database rabbitmq matching_engine
+	@docker-compose -f docker-compose.yml up -d frontend backend database rabbitmq matching_engine nginx
 
 log-frontend: ## Runs `docker logs <container> -f` for the frontend container
 	@echo "==============================================="
