@@ -46,16 +46,18 @@ const placeStockOrder = async (req, res) => {
       (stockOrder.order_type == 'LIMIT' && !stockOrder.price) ||
       (stockOrder.order_type == 'MARKET' && stockOrder.price)
     ) {
-      res.status(400).send({
-        message: `When the order_type is LIMIT, the price field is required.
-          When the order_type is MARKET, the price field must be null.`,
-      })
+      sendErrorResponse(
+        res,
+        400,
+        `When the order_type is LIMIT, the price field is required.
+      When the order_type is MARKET, the price field must be null.`
+      )
       return
     }
 
     await orderController.placeStockOrder(auth.user_name, stockOrder)
 
-    res.status(200).send()
+    sendSuccessResponse(res, null)
   } catch (err) {
     sendErrorResponse(res, 401, err)
   }

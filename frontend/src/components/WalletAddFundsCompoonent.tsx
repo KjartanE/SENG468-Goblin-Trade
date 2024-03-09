@@ -1,5 +1,5 @@
 import { Formik, Form } from 'formik'
-import { MenuItem, Button, TextField, Typography } from '@mui/material'
+import { Button, TextField, Typography } from '@mui/material'
 import { useWallet } from '../contexts/WalletContext'
 import * as Yup from 'yup'
 import { Fragment, useState } from 'react'
@@ -17,7 +17,7 @@ const addFundsSchema = Yup.object().shape({
 })
 
 function WalletAddFundsComponent() {
-  const { wallet, addFundsError, refreshWallet, updateWallet } = useWallet()
+  const { wallet, addFundsError, updateWallet } = useWallet()
   const [open, setOpen] = useState(false)
   const failureMessage = 'Something went wrong. Please refresh the page.'
   const successMessage = 'Funds added successfully!'
@@ -63,7 +63,7 @@ function WalletAddFundsComponent() {
         }}
         validationSchema={addFundsSchema}
       >
-        {({ values, errors, touched, handleChange, setFieldValue }) => (
+        {({ values, errors, touched, handleChange }) => (
           <Form>
             <div>
               <TextField

@@ -50,7 +50,8 @@ export const ApiContextProvider = (props: PropsWithChildren) => {
    * from an environment variable of some kind.
    * TODO: Change this to use environment variables
    */
-  const API_HOST = 'http://localhost:8080' //`${process.env.REACT_APP_BACKEND_HOST}:${process.env.REACT_APP_BACKEND_PORT}`
+  const API_HOST =
+    `${process.env.REACT_APP_BACKEND_HOST}` || 'http://localhost:9000/api'
   const baseURL = `${API_HOST}` // To be changed later if needed
 
   const axiosInstance = axios.create({
