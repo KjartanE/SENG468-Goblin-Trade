@@ -2,6 +2,7 @@ import amqp from 'amqplib'
 import { IStockTX, StockOrder } from '../models/stock_tx.model'
 import { v4 as uuid } from 'uuid'
 import { WalletController } from './wallet.controller'
+import { StockController } from './stock.controller'
 
 const queue = 'stock_orders'
 const StockTx = require('../models/stock_tx.model')
@@ -14,6 +15,7 @@ const StockTx = require('../models/stock_tx.model')
  */
 export class OrderController {
   private walletController: WalletController = new WalletController()
+  private stockController: StockController = new StockController()
   /**
    * Place Stock Order
    *
@@ -26,12 +28,11 @@ export class OrderController {
     user_name: string,
     stockOrder: StockOrder
   ): Promise<void> {
-    const walletBalance =
-      await this.walletController.getWalletBalance(user_name)
+    const wallet = await this.walletController.getWallet(user_name)
 
     const isDebit = stockOrder.is_buy
     const amount = stockOrder.price * stockOrder.quantity
-    if (isDebit && walletBalance.balance < amount) {
+    if (isDebit && wallet.balance < amount) {
       throw new Error('Insufficient balance')
     }
 
@@ -56,7 +57,7 @@ export class OrderController {
     await this.createStockTx(stockOrder, stockTxId, walletTxId)
 
     // Queue Stock Order
-    await this.queueStockOrder(stockOrder)
+    await this.queueStockOrder({ ...stockOrder, stock_tx_id: stockTxId })
   }
 
   /**
@@ -131,17 +132,36 @@ export class OrderController {
   }
 
   /**
-   * Get Stock Orders By TXIds
+   * Get Stock Transactions By UserName
+   *
+   * @param {string} user_name
+   * @return {*}  {Promise<IStockTX[]>}
+   * @memberof OrderController
+   */
+  async getStockTransactionsByUserName(user_name: string): Promise<IStockTX[]> {
+    const walletTxOrders =
+      await this.walletController.getWalletTransactionsByUserName(user_name)
+
+    const walletTxIds = walletTxOrders.map(tx => tx.wallet_tx_id)
+    const stockTransactions = await StockTx.find({
+      wallet_tx_id: { $in: walletTxIds },
+    })
+
+    return stockTransactions
+  }
+
+  /**
+   * Get Stock Transactions By TXIds
    *
    * @param {string[]} stockTxIds
    * @return {*}  {Promise<StockOrder[]>}
    * @memberof OrderController
    */
-  async getStockOrdersByTXIds(stockTxIds: string[]): Promise<IStockTX[]> {
-    const stockOrders = await StockTx.find({
+  async getStockTransactionsByTXIds(stockTxIds: string[]): Promise<IStockTX[]> {
+    const stockTransactions = await StockTx.find({
       stock_tx_id: { $in: stockTxIds },
     })
-    return stockOrders
+    return stockTransactions
   }
 
   /**
@@ -167,5 +187,40 @@ export class OrderController {
     } finally {
       if (connection) await connection.close()
     }
+  }
+
+  /**
+   *  Handle Stock Order
+   *
+   * @param {StockOrder} stockOrder
+   * @return {*}  {Promise<void>}
+   * @memberof OrderController
+   */
+  async HandleStockOrder(stockOrder: StockOrder): Promise<void> {
+    const stockTx = await StockTx.findOne({
+      stock_tx_id: stockOrder.stock_tx_id,
+    })
+    if (!stockTx) {
+      throw new Error('Invalid Stock Transaction ID')
+    }
+
+    if (stockOrder.cancel_order) {
+      stockTx.order_status = 'CANCELLED'
+      await stockTx.save()
+      await this.walletController.returnMoneyToWallet(stockTx)
+      return
+    }
+
+    stockTx.order_status = 'COMPLETED'
+    await stockTx.save()
+
+    const wallet = await this.walletController.getUserWalletByStockTx(stockTx)
+
+    // update stock portfolio
+    await this.stockController.addStockToUserPortfolio(
+      wallet.user_name,
+      stockTx.stock_id,
+      stockTx.quantity
+    )
   }
 }

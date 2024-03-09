@@ -11,7 +11,7 @@ const useAuthApi = (axios: AxiosInstance) => {
       password,
     })
 
-    return data
+    return data.data.token
   }
 
   /**
@@ -20,7 +20,7 @@ const useAuthApi = (axios: AxiosInstance) => {
   const self = async (): Promise<IUser> => {
     const { data } = await axios.post('/self')
 
-    return data
+    return data.data
   }
 
   /**
@@ -41,7 +41,7 @@ const useAuthApi = (axios: AxiosInstance) => {
       name,
     })
 
-    return data
+    return data.success
   }
 
   return {

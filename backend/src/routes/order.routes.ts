@@ -2,6 +2,13 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import { OrderController } from '../controllers/order.controller'
 import { handleToken } from '../helpers/auth'
+import {
+  checkValidation,
+  sendErrorResponse,
+  sendSuccessResponse,
+  tokenValidator,
+} from '../helpers/axios'
+import { body } from 'express-validator'
 
 // https://www.freecodecamp.org/news/how-to-use-rabbitmq-with-nodejs/
 
@@ -9,6 +16,15 @@ const router = express.Router()
 const orderController: OrderController = new OrderController()
 
 router.use(bodyParser.json())
+
+const placeStockOrderValidator = [
+  ...tokenValidator,
+  body('stock_id', 'Invalid stock_id').not().isEmpty(),
+  body('is_buy', 'Invalid is_buy').not().isEmpty(),
+  body('order_type', 'Invalid order_type').not().isEmpty(),
+  body('quantity', 'Invalid quantity').not().isEmpty(),
+  body('price', 'Invalid price').optional().isNumeric(),
+]
 
 /**
  * Place a stock order
@@ -18,19 +34,21 @@ router.use(bodyParser.json())
  */
 const placeStockOrder = async (req, res) => {
   try {
+    //validate request
+    if (!checkValidation(req, res)) {
+      return
+    }
+
     const auth = await handleToken(req, res)
     const stockOrder = req.body
 
     if (
-      (!stockOrder.stock_id || ((stockOrder.is_buy != true) && (stockOrder.is_buy != false)) || !stockOrder.order_type || !stockOrder.quantity) ||
-      (stockOrder.order_type=="LIMIT" && !stockOrder.price) ||
-      (stockOrder.order_type=="MARKET" && stockOrder.price)
+      (stockOrder.order_type == 'LIMIT' && !stockOrder.price) ||
+      (stockOrder.order_type == 'MARKET' && stockOrder.price)
     ) {
       res.status(400).send({
-        message:
-          `stock_id, is_buy, order_type, and quantity are required fields.
-          When the order_type is LIMIT, the price field is required.
-          When the order_type is MARKET, the price field must be null.`
+        message: `When the order_type is LIMIT, the price field is required.
+          When the order_type is MARKET, the price field must be null.`,
       })
       return
     }
@@ -39,11 +57,10 @@ const placeStockOrder = async (req, res) => {
 
     res.status(200).send()
   } catch (err) {
-    console.log('err', err)
-    res.status(401).send({ message: err })
+    sendErrorResponse(res, 401, err)
   }
 }
-router.post('/placeStockOrder', placeStockOrder)
+router.post('/placeStockOrder', placeStockOrderValidator, placeStockOrder)
 
 /**
  * Get all Stock Orders
@@ -53,16 +70,28 @@ router.post('/placeStockOrder', placeStockOrder)
  */
 const getStockTransactions = async (req, res) => {
   try {
-    await handleToken(req, res)
+    // validate request
+    if (!checkValidation(req, res)) {
+      return
+    }
 
-    const response = await orderController.getStockTransactions()
+    const auth = await handleToken(req, res)
 
-    res.status(200).send(response)
+    const response = await orderController.getStockTransactionsByUserName(
+      auth.user_name
+    )
+
+    sendSuccessResponse(res, response)
   } catch (err) {
-    res.status(401).send({ message: err })
+    sendErrorResponse(res, 401, err)
   }
 }
-router.get('/getStockTransactions', getStockTransactions)
+router.get('/getStockTransactions', tokenValidator, getStockTransactions)
+
+const cancelStockOrderValidator = [
+  ...tokenValidator,
+  body('stock_tx_id', 'Invalid stock_tx_id').not().isEmpty(),
+]
 
 /**
  * Cancel a stock order
@@ -72,24 +101,26 @@ router.get('/getStockTransactions', getStockTransactions)
  */
 const cancelStockTransaction = async (req, res) => {
   try {
-    await handleToken(req, res)
-
-    const stockOrder = req.body
-
-    if (!stockOrder.stock_tx_id) {
-      res.status(400).send({
-        message: 'stock_tx_id is a required field.',
-      })
+    // validate request
+    if (!checkValidation(req, res)) {
       return
     }
 
-    await orderController.cancelStockOrder(stockOrder.stock_tx_id)
+    await handleToken(req, res)
 
-    res.status(200).send()
+    const stock_tx_id = req.body.stock_tx_id
+
+    await orderController.cancelStockOrder(stock_tx_id)
+
+    sendSuccessResponse(res, null)
   } catch (err) {
-    res.status(401).send({ message: err })
+    sendErrorResponse(res, 401, err)
   }
 }
-router.post('/cancelStockTransaction', cancelStockTransaction)
+router.post(
+  '/cancelStockTransaction',
+  cancelStockOrderValidator,
+  cancelStockTransaction
+)
 
 module.exports = router

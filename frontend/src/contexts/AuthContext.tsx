@@ -56,12 +56,19 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
    */
   useEffect(() => {
     const getUser = async () => {
-      if (!api.userToken) return
+      if (api.userToken == '') return
+      console.log('api.userToken', api.userToken)
 
-      const user = await api.auth.self()
+      try {
+        const user = await api.auth.self()
 
-      if (user) {
-        setUser(user)
+        if (user) {
+          setUser(user)
+        }
+      } catch (error) {
+        console.log('error', error)
+        api.setUserToken('')
+        localStorage.setItem('user', JSON.stringify(null))
       }
     }
 

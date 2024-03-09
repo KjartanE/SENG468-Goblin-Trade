@@ -2,6 +2,13 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import { WalletController } from '../controllers/wallet.controller'
 import { handleToken } from '../helpers/auth'
+import {
+  checkValidation,
+  sendErrorResponse,
+  sendSuccessResponse,
+  tokenValidator,
+} from '../helpers/axios'
+import { body } from 'express-validator'
 
 const router = express.Router()
 
@@ -17,17 +24,27 @@ router.use(bodyParser.json())
  */
 const getWalletBalance = async (req, res) => {
   try {
+    //validate request
+    if (!checkValidation(req, res)) {
+      return
+    }
+
     const auth = await handleToken(req, res)
 
-    const response = await walletController.getWalletBalance(auth.user_name)
+    const wallet = await walletController.getWallet(auth.user_name)
 
-    res.status(200).send(response)
+    sendSuccessResponse(res, { balance: wallet.balance })
   } catch (err) {
-    console.log('err', err)
-    res.status(401).send({ message: err })
+    sendErrorResponse(res, 401, err)
   }
 }
-router.get('/getwalletbalance', getWalletBalance)
+router.get('/getWalletBalance', tokenValidator, getWalletBalance)
+
+const addMoneyValidator = [
+  ...tokenValidator,
+  body('amount', 'Invalid amount').isNumeric(),
+  body('amount', 'Invalid does not Empty').not().isEmpty(),
+]
 
 /**
  * Update Wallet Balance
@@ -37,22 +54,23 @@ router.get('/getwalletbalance', getWalletBalance)
  */
 const addMoneyToWallet = async (req, res) => {
   try {
+    //validate request
+    if (!checkValidation(req, res)) {
+      return
+    }
+
     const auth = await handleToken(req, res)
 
     const amount = req.body.amount
 
-    const response = await walletController.addMoneyToWallet(
-      auth.user_name,
-      amount
-    )
+    await walletController.addMoneyToWallet(auth.user_name, amount)
 
-    res.status(200).send(response)
+    sendSuccessResponse(res, null)
   } catch (err) {
-    console.log('err', err)
-    res.status(401).send({ message: err })
+    sendErrorResponse(res, 401, err)
   }
 }
-router.post('/addmoney', addMoneyToWallet)
+router.post('/addMoneyToWallet', addMoneyValidator, addMoneyToWallet)
 
 /**
  * Get Wallet Transactions
@@ -62,21 +80,22 @@ router.post('/addmoney', addMoneyToWallet)
  */
 const getWalletTransactions = async (req, res) => {
   try {
+    //validate request
+    if (!checkValidation(req, res)) {
+      return
+    }
+
     const auth = await handleToken(req, res)
 
-    const response = await walletController.getWalletTransactions(
+    const transactions = await walletController.getWalletTransactionsByUserName(
       auth.user_name
     )
 
-    const transactions =
-      await walletController.getWalletTransactionsByTXIds(response)
-
-    res.status(200).send(transactions)
+    sendSuccessResponse(res, transactions)
   } catch (err) {
-    console.log('err', err)
-    res.status(401).send({ message: err })
+    sendErrorResponse(res, 401, err)
   }
 }
-router.get('/getwallettransactions', getWalletTransactions)
+router.get('/getWalletTransactions', tokenValidator, getWalletTransactions)
 
 module.exports = router

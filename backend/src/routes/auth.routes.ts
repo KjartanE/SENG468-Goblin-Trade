@@ -2,10 +2,25 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import { AuthController } from '../controllers/auth.controller'
 import { hashPassword } from '../helpers/auth'
+import { body } from 'express-validator'
+import {
+  checkValidation,
+  sendErrorResponse,
+  sendSuccessResponse,
+  tokenValidator,
+} from '../helpers/axios'
+
 const router = express.Router()
 const authController: AuthController = new AuthController()
 
 router.use(bodyParser.json())
+
+const loginValidator = [
+  body('user_name', 'Invalid "user_name" does not Empty').not().isEmpty(),
+  body('password', 'The minimum password length is 6 characters').isLength({
+    min: 6,
+  }),
+]
 
 /**
  * Login user
@@ -16,11 +31,8 @@ router.use(bodyParser.json())
  */
 const login = async (req, res) => {
   try {
-    //Validate request
-    if (!req.body.user_name || !req.body.password) {
-      res
-        .status(400)
-        .send({ success: 'false', data: null, error: 'Fields cannot be empty' })
+    //validate request
+    if (!checkValidation(req, res)) {
       return
     }
 
@@ -29,13 +41,12 @@ const login = async (req, res) => {
       req.body.password
     )
 
-    res.status(200).send(response.token)
+    sendSuccessResponse(res, { token: response.token })
   } catch (err) {
-    console.log('err', err)
-    res.status(401).send({ message: err })
+    sendErrorResponse(res, 401, err)
   }
 }
-router.post('/login', login)
+router.post('/login', loginValidator, login)
 
 /**
  * Get the current User
@@ -45,8 +56,8 @@ router.post('/login', login)
  */
 const self = async (req, res) => {
   try {
-    if (!req.headers.token) {
-      res.status(400).send({ message: 'Self endpoint requires token header.' })
+    //validate request
+    if (!checkValidation(req, res)) {
       return
     }
 
@@ -54,12 +65,20 @@ const self = async (req, res) => {
 
     const response = await authController.self(token)
 
-    res.status(200).send(response)
+    sendSuccessResponse(res, response)
   } catch (err) {
-    res.status(401).send({ message: err })
+    sendErrorResponse(res, 401, err)
   }
 }
-router.post('/self', self)
+router.post('/self', tokenValidator, self)
+
+const registerValidator = [
+  body('user_name', 'Invalid "user_name" does not Empty').not().isEmpty(),
+  body('password', 'The minimum "password" length is 6 characters').isLength({
+    min: 6,
+  }),
+  body('name', 'Invalid "name" does not Empty').not().isEmpty(),
+]
 
 /**
  * Register user
@@ -69,28 +88,24 @@ router.post('/self', self)
  */
 const register = async (req, res) => {
   try {
-    //Validate request
-    if (!req.body.user_name || !req.body.password || !req.body.name) {
-      res
-        .status(400)
-        .send({ success: 'false', data: null, error: 'Fields cannot be empty' })
+    //validate request
+    if (!checkValidation(req, res)) {
       return
     }
 
     const hashedPassword = await hashPassword(req.body.password)
 
-    const response = await authController.register(
+    await authController.register(
       req.body.user_name,
       hashedPassword,
       req.body.name
     )
 
-    res.status(200).send(response.token)
+    sendSuccessResponse(res, null)
   } catch (err) {
-    console.log('err', err)
-    res.status(401).send({ message: err })
+    sendErrorResponse(res, 401, err)
   }
 }
-router.post('/register', register)
+router.post('/register', registerValidator, register)
 
 module.exports = router

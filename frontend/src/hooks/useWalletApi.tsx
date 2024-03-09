@@ -17,7 +17,7 @@ const useWalletApi = (axios: AxiosInstance) => {
   const getWalletBalance = async (): Promise<IWallet> => {
     const { data } = await axios.get('/getWalletBalance')
 
-    return data
+    return data.data
   }
 
   /**
@@ -27,11 +27,11 @@ const useWalletApi = (axios: AxiosInstance) => {
    * @return {*}  {Promise<string>}
    */
   const updateWalletBalance = async (amount: number): Promise<IWallet> => {
-    const { data } = await axios.post('/addMoney', {
+    const { data } = await axios.post('/addMoneyToWallet', {
       amount,
     })
 
-    return data
+    return data.data
   }
 
   /**
@@ -42,7 +42,7 @@ const useWalletApi = (axios: AxiosInstance) => {
   const getWalletTransactions = async (): Promise<IWalletTransaction[]> => {
     const { data } = await axios.get('/getWalletTransactions')
 
-    return data
+    return data.data
   }
 
   return {
