@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "385bca15-fd6d-4d17-beb4-91fd363058b7",
+		"_postman_id": "1d4eba76-2f2d-47ad-9ef1-c1d9da3c033c",
 		"name": "468-Project",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "22286560"
+		"_exporter_id": "19069030"
 	},
 	"item": [
 		{
@@ -82,7 +82,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"user_name\":\"test\",\"password\":\"test\",\"name\":\"Test User\"}",
+							"raw": "{\"user_name\":\"test123\",\"password\":\"test123\",\"name\":\"Test User\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -472,7 +472,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"amount\":100}",
+							"raw": "{\"amount\": 400 }",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -480,13 +480,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{apiUrl}}:{{apiPort}}/addMoney",
+							"raw": "{{apiUrl}}:{{apiPort}}/addMoneyToWallet",
 							"host": [
 								"{{apiUrl}}"
 							],
 							"port": "{{apiPort}}",
 							"path": [
-								"addMoney"
+								"addMoneyToWallet"
 							]
 						}
 					},
@@ -794,13 +794,13 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "your-token",
+								"value": "{{token}}",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"stock_tx_id\":\"62738363a50350b1fbb243a6\"}",
+							"raw": "{\"stock_tx_id\":\"82923585-fdd9-4444-a5a6-8e73181c00d8\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -880,13 +880,13 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "your-token",
+								"value": "{{token}}",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"stock_id\":\"some_stock_id\",\"quantity\":100}",
+							"raw": "{\"stock_id\":\"22\",\"quantity\":100}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -966,13 +966,13 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "your-token",
+								"value": "{{token}}",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"stock_name\":\"Your Stock Name\"}",
+							"raw": "{\"stock_name\":\"PEAAAR\"}",
 							"options": {
 								"raw": {
 									"language": "json"
