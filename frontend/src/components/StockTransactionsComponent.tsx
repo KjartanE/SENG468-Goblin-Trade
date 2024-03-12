@@ -1,6 +1,7 @@
 import { useStockTransactions } from '../contexts/StockTransactionsContext'
 import Box from '@mui/material/Box'
-import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid'
+import Button from '@mui/material/Button'
+import { DataGrid, GridColDef, GridToolbar, GridRenderCellParams } from '@mui/x-data-grid'
 
 const columns: GridColDef[] = [
   {
@@ -47,6 +48,22 @@ const columns: GridColDef[] = [
     field: 'time_stamp',
     headerName: 'Time Stamp',
     width: 300,
+  },
+  {
+    field: 'cancel_order',
+    headerName: 'Cancel Order',
+    renderCell: (params: GridRenderCellParams<any, Date>) => (
+      <strong>
+        <Button
+          variant="contained"
+          size="small"
+          style={{ marginLeft: 16 }}
+          tabIndex={params.hasFocus ? 0 : -1}
+        >
+          Cancel
+        </Button>
+      </strong>
+    ),
   },
 ]
 
