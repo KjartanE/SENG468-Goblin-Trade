@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import { add_mock_data } from './helpers/db'
+// import { add_mock_data } from './helpers/db'
 
 const auth = require('./routes/auth.routes')
 const stock = require('./routes/stock.routes')
@@ -31,7 +31,7 @@ mongoose
   })
 
 // Import data
-add_mock_data()
+// add_mock_data()
 
 // Routes
 app.use('/', auth)

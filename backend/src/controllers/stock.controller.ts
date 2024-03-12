@@ -1,3 +1,4 @@
+import { IPortfolio } from '../models/portfolio.model'
 import { IStock } from '../models/stock.model'
 
 const Stock = require('../models/stock.model')
@@ -32,19 +33,52 @@ export class StockController {
    * Get Users stock portfolio
    *
    * @param {string} user_name
-   * @return {*}  {Promise<IStock[]>}
+   * @return {*}  {Promise<IPortfolio[]>}
    * @memberof StockController
    */
-  async getStockPortfolio(user_name: string): Promise<IStock[]> {
+  async getStockPortfolio(user_name: string): Promise<IPortfolio[]> {
     const userPortfolio = await Portfolio.find({ user_name: user_name }).select(
       'stock_id quantity_owned'
     )
+
+    const stocks = await Stock.find().select('stock_id stock_name')
 
     if (!userPortfolio) {
       throw new Error('There were no stocks found.')
     }
 
-    return userPortfolio
+    const portfolio = userPortfolio.map(stock => {
+      const stock_name = stocks.find(
+        stockItem => stockItem.stock_id === stock.stock_id
+      )
+      return {
+        stock_id: stock.stock_id,
+        stock_name: stock_name.stock_name,
+        quantity_owned: stock.quantity_owned,
+      }
+    })
+
+    return portfolio
+  }
+
+  /**
+   * Get User Stock Portfolio
+   *
+   * @param {string} user_name
+   * @param {number} stock_id
+   * @return {*}  {Promise<IPortfolio>}
+   * @memberof StockController
+   */
+  async getUserStockPortfolio(
+    user_name: string,
+    stock_id: number
+  ): Promise<IPortfolio> {
+    const portfolio = await Portfolio.findOne({
+      user_name: user_name,
+      stock_id: stock_id,
+    })
+
+    return portfolio
   }
 
   /**
@@ -90,6 +124,13 @@ export class StockController {
 
     if (portfolio) {
       portfolio.quantity_owned = portfolio.quantity_owned + quantity
+
+      if(portfolio.quantity_owned === 0) {
+        const response = await Portfolio.deleteOne({ user_name: user_name, stock_id: stock_id })
+        return response
+      }
+
+
       await portfolio.save()
       return portfolio
     }

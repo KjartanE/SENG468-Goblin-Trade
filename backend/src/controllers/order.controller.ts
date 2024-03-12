@@ -3,9 +3,16 @@ import { IStockTX, StockOrder } from '../models/stock_tx.model'
 import { v4 as uuid } from 'uuid'
 import { WalletController } from './wallet.controller'
 import { StockController } from './stock.controller'
+import { IWallet } from '../models/wallet.model'
 
 const queue = 'stock_orders'
 const StockTx = require('../models/stock_tx.model')
+
+export enum OrderStatus {
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
 
 /**
  * Order Controller
@@ -16,6 +23,7 @@ const StockTx = require('../models/stock_tx.model')
 export class OrderController {
   private walletController: WalletController = new WalletController()
   private stockController: StockController = new StockController()
+
   /**
    * Place Stock Order
    *
@@ -28,16 +36,12 @@ export class OrderController {
     user_name: string,
     stockOrder: StockOrder
   ): Promise<void> {
-    const wallet = await this.walletController.getWallet(user_name)
-
-    const isDebit = stockOrder.is_buy
     const amount = stockOrder.price * stockOrder.quantity
-    if (isDebit && wallet.balance < amount) {
-      throw new Error('Insufficient balance')
-    }
 
-    if (isDebit) {
-      await this.walletController.addMoneyToWallet(user_name, -amount)
+    if (stockOrder.is_buy) {
+      await this.handleBuyStockOrder(user_name, stockOrder)
+    } else {
+      await this.handleSellStockOrder(user_name, stockOrder)
     }
 
     const stockTxId = await uuid()
@@ -61,6 +65,60 @@ export class OrderController {
   }
 
   /**
+   * Handle Buy Stock Order
+   *
+   * @param {string} user_name
+   * @param {StockOrder} stockOrder
+   * @return {*}  {Promise<IWallet>}
+   * @memberof OrderController
+   */
+  async handleBuyStockOrder(
+    user_name: string,
+    stockOrder: StockOrder
+  ): Promise<IWallet> {
+    const wallet = await this.walletController.getWallet(user_name)
+    const amount = stockOrder.price * stockOrder.quantity
+
+    if (wallet.balance < amount) {
+      throw new Error('Insufficient balance')
+    }
+
+    return this.walletController.addMoneyToWallet(user_name, -amount)
+  }
+
+  /**
+   * Handle Sell Stock Order
+   *
+   * @param {string} user_name
+   * @param {StockOrder} stockOrder
+   * @return {*}  {Promise<void>}
+   * @memberof OrderController
+   */
+  async handleSellStockOrder(
+    user_name: string,
+    stockOrder: StockOrder
+  ): Promise<void> {
+    const portfolio = await this.stockController.getUserStockPortfolio(
+      user_name,
+      stockOrder.stock_id
+    )
+
+    if (!portfolio) {
+      throw new Error('Insufficient stocks')
+    }
+
+    if (portfolio.quantity_owned < stockOrder.quantity) {
+      throw new Error('Insufficient stocks')
+    }
+
+    await this.stockController.addStockToUserPortfolio(
+      user_name,
+      stockOrder.stock_id,
+      -stockOrder.quantity
+    )
+  }
+
+  /**
    * Create Stock Transaction
    *
    * @param {StockOrder} stockOrder
@@ -71,13 +129,15 @@ export class OrderController {
   async createStockTx(
     stockOrder: StockOrder,
     stockTxId: string,
-    walletTxId: string
+    walletTxId: string,
+    parent_stock_tx_id?: string
   ): Promise<void> {
     const stockTx = {
       stock_tx_id: stockTxId,
-      stock_id: stockOrder.stock_id,
       wallet_tx_id: walletTxId,
-      order_status: 'PENDING',
+      parent_stock_tx_id: parent_stock_tx_id || null,
+      stock_id: stockOrder.stock_id,
+      order_status: OrderStatus.IN_PROGRESS,
       is_buy: stockOrder.is_buy,
       order_type: stockOrder.order_type,
       stock_price: stockOrder.price,
@@ -111,8 +171,8 @@ export class OrderController {
     await this.queueStockOrder(StockCancelOrder)
 
     // Update Stock Transaction
-    if (stockTx.order_status === 'PENDING') {
-      stockTx.order_status = 'CANCELLED'
+    if (stockTx.order_status === OrderStatus.IN_PROGRESS) {
+      stockTx.order_status = OrderStatus.CANCELLED
       await stockTx.save()
 
       // return money to wallet
@@ -205,13 +265,13 @@ export class OrderController {
     }
 
     if (stockOrder.cancel_order) {
-      stockTx.order_status = 'CANCELLED'
+      stockTx.order_status = OrderStatus.CANCELLED
       await stockTx.save()
       await this.walletController.returnMoneyToWallet(stockTx)
       return
     }
 
-    stockTx.order_status = 'COMPLETED'
+    stockTx.order_status = OrderStatus.COMPLETED
     await stockTx.save()
 
     const wallet = await this.walletController.getUserWalletByStockTx(stockTx)

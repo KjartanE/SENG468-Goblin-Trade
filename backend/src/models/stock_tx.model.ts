@@ -18,6 +18,7 @@ export enum OrderType {
 export interface IStockTX {
   stock_tx_id: string
   wallet_tx_id: string
+  parent_stock_tx_id?: string
   stock_id: number
   order_status: OrderStatus
   is_buy: boolean
@@ -41,6 +42,7 @@ export const stockTXSchema = new Schema<IStockTX>(
   {
     stock_tx_id: { type: String, required: true, unique: true },
     wallet_tx_id: { type: String, required: true, unique: true },
+    parent_stock_tx_id: { type: String, required: false },
     stock_id: { type: Number, required: true },
     order_status: { type: String, required: true },
     is_buy: { type: Boolean, required: true },

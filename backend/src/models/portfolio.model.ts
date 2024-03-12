@@ -3,6 +3,7 @@ import { Schema, model } from 'mongoose'
 export interface IPortfolio {
   user_name: string
   stock_id: number
+  stock_name?: string
   quantity_owned: number
 }
 

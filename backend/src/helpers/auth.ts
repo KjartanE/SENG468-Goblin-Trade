@@ -4,7 +4,6 @@ import { jwtDecode } from 'jwt-decode'
 
 const User = require('../models/user.model')
 const bcrypt = require('bcrypt')
-const authController: AuthController = new AuthController()
 /**
  * Hashes a password
  *
@@ -121,6 +120,8 @@ export async function handleToken(
   }
 
   const token = req.headers.token
+
+  const authController: AuthController = new AuthController()
 
   if (!authController.validateToken(token)) {
     res.status(400).send({
