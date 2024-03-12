@@ -10,8 +10,6 @@ import {
 } from '../helpers/axios'
 import { body } from 'express-validator'
 
-// https://www.freecodecamp.org/news/how-to-use-rabbitmq-with-nodejs/
-
 const router = express.Router()
 const orderController: OrderController = new OrderController()
 
@@ -23,7 +21,7 @@ const placeStockOrderValidator = [
   body('is_buy', 'Invalid is_buy').not().isEmpty(),
   body('order_type', 'Invalid order_type').not().isEmpty(),
   body('quantity', 'Invalid quantity').not().isEmpty(),
-  body('price', 'Invalid price').optional().isNumeric(),
+  body('price', 'Invalid price').optional(),
 ]
 
 /**

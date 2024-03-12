@@ -25,7 +25,7 @@ services:
     deploy:
       replicas: 1
     ports:
-      - "8080"
+      - "4000"
     environment:
       - DB_HOST=${DB_HOST}
       - DB_ADMIN=${DB_ADMIN}
@@ -42,6 +42,35 @@ services:
     volumes:
       - ./backend/:/backend/dev
       - /backend/dev/node_modules/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+
+  order_handler:
+    restart: always
+    build:
+      context: ./order_handler
+      dockerfile: Dockerfile
+    ports:
+      - "5000"
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_ADMIN=${DB_ADMIN}
+      - DB_ADMIN_PASS=${DB_ADMIN_PASS}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_PORT=${DB_PORT}
+      - JWT_SECRET=${JWT_SECRET}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+    networks:
+      - loadbalancing
+    volumes:
+      - ./order_handler/:/order_handler/dev
+      - /order_handler/dev/node_modules/
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -69,9 +98,9 @@ services:
       - rabbitmq_go_net
     healthcheck:
       test: rabbitmq-diagnostics -q ping
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      interval: 5s
+      timeout: 5s
+      retries: 25
 
   matching_engine:
     build:
@@ -108,6 +137,7 @@ services:
       - frontend
       - backend
       - matching_engine
+      - order_handler
     networks:
       - loadbalancing
 

@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import { add_mock_data } from './helpers/db'
+// import { add_mock_data } from './helpers/db'
 
 const auth = require('./routes/auth.routes')
 const stock = require('./routes/stock.routes')
@@ -31,7 +31,7 @@ mongoose
   })
 
 // Import data
-add_mock_data()
+// add_mock_data()
 
 // Routes
 app.use('/', auth)
@@ -48,29 +48,7 @@ app.post('/', (req, res) => {
 })
 
 // // set port, listen for requests
-const PORT = 8080
+const PORT = 4000
 app.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`)
 })
-
-const amqp = require('amqplib')
-const queue = 'finished_orders'
-var channel, connection
-connectQueue() // call the connect function
-
-async function connectQueue() {
-  try {
-    const rabbitmqHost = `amqp://${process.env.RABBITMQ_USER}:${process.env.RABBITMQ_PASS}@${process.env.RABBITMQ_HOST}:${process.env.RABBITMQ_PORT}`
-    connection = await amqp.connect(rabbitmqHost)
-    channel = await connection.createChannel()
-
-    await channel.assertQueue(queue, { durable: false })
-
-    channel.consume(queue, data => {
-      console.log(`${Buffer.from(data.content)}`)
-      channel.ack(data)
-    })
-  } catch (error) {
-    console.log(error)
-  }
-}
