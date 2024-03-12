@@ -10,8 +10,6 @@ import {
 } from '../helpers/axios'
 import { body } from 'express-validator'
 
-// https://www.freecodecamp.org/news/how-to-use-rabbitmq-with-nodejs/
-
 const router = express.Router()
 const orderController: OrderController = new OrderController()
 
