@@ -116,6 +116,9 @@ services:
       - RABBITMQ_PASS=${RABBITMQ_PASS}
     networks:
       - loadbalancing
+    volumes:
+      - ./matching_engine/:/matching_engine/dev
+      - /matching_engine/dev/node_modules/
     depends_on:
       rabbitmq:
         condition: service_healthy

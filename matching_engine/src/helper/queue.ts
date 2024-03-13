@@ -29,7 +29,11 @@ export class QueueHandler {
       await channel.assertQueue(QUEUES.INPUT, { durable: false })
 
       // Check input queue for new orders and place into matching queues
-      channel.consume(QUEUES.INPUT, (data: any) => {
+      channel.consume(QUEUES.INPUT, (data: amqp.ConsumeMessage | null) => {
+        if (data === null) {
+          return
+        }
+
         // add order to appropriate matching queue
         channel.ack(data)
         this.handleOrder(data)
@@ -46,7 +50,7 @@ export class QueueHandler {
    * @return {*}
    * @memberof QueueHandler
    */
-  async getQueueLength(queueName) {
+  async getQueueLength(queueName: string) {
     const channel = await this.connection.createChannel()
 
     await channel.assertQueue(queueName, { durable: false })
@@ -65,7 +69,7 @@ export class QueueHandler {
    * @param {*} data
    * @memberof QueueHandler
    */
-  async publishToQueue(queueName, data) {
+  async publishToQueue(queueName: string, data: string) {
     try {
       const channel = await this.connection.createChannel()
 
@@ -84,10 +88,10 @@ export class QueueHandler {
   /**
    * Handle Order
    *
-   * @param {*} data
+   * @param {amqp.ConsumeMessage} data
    * @memberof QueueHandler
    */
-  async handleOrder(data) {
+  async handleOrder(data: amqp.ConsumeMessage) {
     const order: StockOrder = JSON.parse(`${Buffer.from(data.content)}`)
 
     if ("cancel_order" in order) {
@@ -125,8 +129,7 @@ export class QueueHandler {
     console.log("handleLimitOrder", order)
     if (order.is_buy) {
       console.log("Handling limit buy")
-    }
-    else {
+    } else {
       this.handleOrderToQueue(QUEUES.LIMIT_ORDER_SELL, order)
     }
   }
@@ -142,51 +145,174 @@ export class QueueHandler {
     if (order.is_buy) {
       console.log("Handling market buy")
       try {
-        const queue_length = await this.getQueueLength(QUEUES.LIMIT_ORDER_SELL)
-
-        // match market buy order against limit sell queue
-        const channel = await this.connection.createChannel()
-        await channel.assertQueue(QUEUES.LIMIT_ORDER_SELL, { durable: false })
-        var lowest_price, lowest_price_id, loop_count = 0, found_sell = false
-  
-    
-        await channel.consume(QUEUES.LIMIT_ORDER_SELL, async (sell_data: any) => {
-          const sell_order: StockOrder = JSON.parse(`${Buffer.from(sell_data.content)}`)
-
-            loop_count++
-
-            if (lowest_price == undefined || sell_order.price < lowest_price) {
-              lowest_price = sell_order.price
-              lowest_price_id = sell_order.stock_tx_id
-            }
-
-            if (loop_count == queue_length) {
-              console.log("Lowest price", lowest_price, lowest_price_id)
-              found_sell = true
-            }
-            else if (found_sell && sell_order.stock_tx_id == lowest_price_id) {
-
-
-              // TODO: Handle matched orders
-              console.log("Handling matched orders", order, sell_order)
-
-
-              // Dequeue the matched sell order
-              channel.ack(sell_data)
-              // Release the channel
-              channel.close()
-              return
-            }
-            // Requeue order
-            channel.reject(sell_data, true)
-        })
+        const lowestOrder = await this.findLowestPrice(
+          QUEUES.MARKET_ORDER_SELL,
+          order
+        )
+        console.log("lowestOrder", lowestOrder)
+      } catch (error) {
+        console.log(error)
+      }
+    } else {
+      try {
+        const highestOrder = await this.findHighestPrice(
+          QUEUES.MARKET_ORDER_SELL,
+          order
+        )
+        console.log("highestOrder", highestOrder)
       } catch (error) {
         console.log(error)
       }
     }
-    else {
-      this.handleOrderToQueue(QUEUES.MARKET_ORDER_SELL, order)
+  }
+
+  /**
+   * Handle Matched Orders
+   *
+   * @param {StockOrder[]} orders
+   * @memberof QueueHandler
+   */
+  async handleMatchedOrders(orders: StockOrder[]) {
+    console.log("Handling matched orders", orders)
+    // Handle matched orders
+  }
+
+  /**
+   * Check Order is Filled
+   *
+   * @param {StockOrder} newOrder
+   * @param {StockOrder} matchedOrder
+   * @return {*}
+   * @memberof QueueHandler
+   */
+  async checkNewOrderIsFilled(newOrder: StockOrder, matchedOrder: StockOrder) {
+    if (newOrder.quantity > matchedOrder.quantity) {
+      // Partially filled
+      console.log("Partially filled")
+      return false
+    } else if (newOrder.quantity < matchedOrder.quantity) {
+      // Partially filled
+      console.log("new Order filled")
+      return true
+    } else {
+      // Fully filled
+      console.log("Fully filled")
+      return true
     }
+  }
+
+  /**
+   * Find Lowest Price
+   *
+   * @param {string} queueName
+   * @memberof QueueHandler
+   */
+  async findLowestPrice(
+    queueName: string,
+    stockOrder: StockOrder
+  ): Promise<StockOrder | undefined> {
+    const channel = await this.connection.createChannel()
+    await channel.assertQueue(queueName, { durable: false })
+
+    const queue = await channel.checkQueue(queueName)
+    const queue_length = queue.messageCount
+
+    var lowestOrder: StockOrder | undefined = undefined
+    var count = 0
+
+    await channel.consume(queueName, (orderData: any) => {
+      const order: StockOrder = JSON.parse(`${Buffer.from(orderData.content)}`)
+      count++
+
+      // Check if stock_id matches
+      if (order.stock_id != stockOrder.stock_id) {
+        // Requeue order
+        channel.reject(orderData, true)
+        return
+      }
+
+      // check if price is lower
+      if (lowestOrder == undefined || order.price < lowestOrder.price) {
+        lowestOrder = order
+      }
+
+      if (count == queue_length) {
+        // No orders found
+        if (lowestOrder == undefined) {
+          console.log("No orders found")
+          // Release the channel
+          channel.close()
+          return
+        }
+
+        console.log("Lowest price", lowestOrder.price, lowestOrder.stock_tx_id)
+
+        console.log("Handling matched orders", order)
+        // Dequeue the matched order
+        channel.ack(orderData)
+        // Release the channel
+        channel.close()
+        return lowestOrder
+      }
+
+      // Requeue order
+      channel.reject(orderData, true)
+    })
+    return lowestOrder
+  }
+
+  /**
+   * Find Highest Price
+   *
+   * @param {string} queueName
+   * @memberof QueueHandler
+   */
+  async findHighestPrice(
+    queueName: string,
+    stockOrder: StockOrder
+  ): Promise<StockOrder | undefined> {
+    const channel = await this.connection.createChannel()
+    await channel.assertQueue(queueName, { durable: false })
+
+    const queue = await channel.checkQueue(queueName)
+    const queue_length = queue.messageCount
+
+    var highestOrder: StockOrder | undefined = undefined
+    var count = 0
+
+    await channel.consume(queueName, (orderData: any) => {
+      const order: StockOrder = JSON.parse(`${Buffer.from(orderData.content)}`)
+      count++
+
+      // Check if stock_id matches
+      if (order.stock_id != stockOrder.stock_id) {
+        // requeue order
+        channel.reject(orderData, true)
+        return
+      }
+
+      // check if price is higher
+      if (highestOrder == undefined || order.price > highestOrder.price) {
+        highestOrder = order
+      }
+
+      if (count == queue_length) {
+        console.log(
+          "Highest price",
+          highestOrder.price,
+          highestOrder.stock_tx_id
+        )
+
+        console.log("Handling matched orders", order)
+        channel.ack(orderData)
+        channel.close()
+        return highestOrder
+      }
+
+      channel.reject(orderData, true)
+    })
+
+    return highestOrder
   }
 
   /**
