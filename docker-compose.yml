@@ -98,7 +98,7 @@ services:
       - rabbitmq_go_net
     healthcheck:
       test: rabbitmq-diagnostics -q ping
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 25
 
