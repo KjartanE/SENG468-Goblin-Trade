@@ -41,6 +41,7 @@ async function connectQueue() {
       input_channel.ack(data)
       addOrder(data)
     })
+    input_channel.close()
 
     // Check market buy queue
     matchMarketBuytoSell()
@@ -126,13 +127,13 @@ function matchMarketBuytoSell() {
   process_channel.consume(input_queue, (data) => {
     process_channel.ack(data)
     const buy_order = JSON.parse(`${Buffer.from(data.content)}`)
-    var lowest_price, first_sell_id, lowest_price_id, looped = 0
+    var lowest_price, first_sell_id, lowest_price_id, looped = 0, count = 0
     console.log("Matching market buy:", buy_order)
 
     // iterate through all sell orders
     // finds the lowest price sell order and matches with buy order
-    compare_channel.consume(limit_order_sell, (sell_order) => {
-      const sell_order = JSON.parse(`${Buffer.from(sell_order.content)}`)
+    compare_channel.consume(limit_order_sell, (sell) => {
+      const sell_order = JSON.parse(`${Buffer.from(sell.content)}`)
       if (count == 0) {
         lowest_price = sell_order.price
         lowest_price_id = sell_order.stock_tx_id
@@ -143,21 +144,22 @@ function matchMarketBuytoSell() {
         lowest_price_id = sell_order.stock_tx_id
       }
       else if (first_sell_id == sell_order.stock_tx_id) {
-        looped = 1
-        return
+        looped += 1
       }
       else if (looped == 1 && lowest_price_id == sell_order.stock_tx_id) {
         // at best price sell
-        compare_channel.ack(sell_order)
-        
+        compare_channel.ack(sell)
+        console.log("At best price sell:", buy_order.quantity, sell_order.quantity)
+      }
+      else if (looped > 1) {
+        return
       }
       count += 1
     })
-
+    // sell not found, send buy order back to queue
+    publishToQueue(market_order_buy, JSON.stringify(buy_order))
     return
   })
-  // sell not found, send buy order back to queue
-  publishToQueue(market_order_buy, JSON.stringify(buy_order))
 }
 
 // function to get queue length
