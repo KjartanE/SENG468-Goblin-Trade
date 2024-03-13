@@ -1,10 +1,10 @@
 FROM node:latest
 
-WORKDIR /order-handler/dev
+WORKDIR /order_handler/dev
 
 COPY package*.json ./
 RUN npm install && npm cache clean --force
-ENV PATH=/order-handler/node_modules/.bin:$PATH
+ENV PATH=/order_handler/node_modules/.bin:$PATH
 
 COPY tsconfig.json ./
 

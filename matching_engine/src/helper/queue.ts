@@ -62,6 +62,7 @@ export class QueueHandler {
    */
   async publishToQueue(queueName: string, data: string) {
     try {
+      console.log('publishToQueue', queueName, data);
       const channel = await this.connection.createChannel()
 
       await channel.assertQueue(queueName, { durable: false })
@@ -83,6 +84,7 @@ export class QueueHandler {
    * @memberof QueueHandler
    */
   async handleOrder(data: amqp.ConsumeMessage) {
+    console.log("handleOrder", data)
     const order: StockOrder = JSON.parse(`${Buffer.from(data.content)}`)
 
     if ("cancel_order" in order) {
@@ -120,8 +122,10 @@ export class QueueHandler {
     console.log("handleLimitOrder", order)
     if (order.is_buy) {
       console.log("Handling limit buy")
+      this.publishToQueue(QUEUES.LIMIT_ORDER_BUY, JSON.stringify(order))
     } else {
       console.log("Handling limit sell")
+      this.publishToQueue(QUEUES.LIMIT_ORDER_SELL, JSON.stringify(order))
     }
   }
 
@@ -141,6 +145,13 @@ export class QueueHandler {
           order
         )
         console.log("lowestOrder", lowestOrder)
+
+        if (lowestOrder != undefined) {
+          this.handleMatchedOrders(order, lowestOrder)
+        } else {
+          console.log("No orders found")
+          this.publishToQueue(QUEUES.MARKET_ORDER_BUY, JSON.stringify(order))
+        }
       } catch (error) {
         console.log(error)
       }
@@ -152,6 +163,13 @@ export class QueueHandler {
           order
         )
         console.log("highestOrder", highestOrder)
+
+        if (highestOrder != undefined) {
+          this.handleMatchedOrders(order, highestOrder)
+        } else {
+          console.log("No orders found")
+          this.publishToQueue(QUEUES.MARKET_ORDER_SELL, JSON.stringify(order))
+        }
       } catch (error) {
         console.log(error)
       }
@@ -176,9 +194,9 @@ export class QueueHandler {
       // Handle new order filled exactly
       console.log("New order filled exactly")
 
-      const outputQueueData = [newOrder, matchedOrder]
+      const outputQueueData = JSON.stringify([newOrder, matchedOrder])
       // Publish to output queue
-      await this.publishToQueue(QUEUES.OUTPUT, String(outputQueueData))
+      await this.publishToQueue(QUEUES.OUTPUT, outputQueueData)
     } else if (newOrderStatus == ORDER_STATUS.FILLED) {
       // Handle new order filled
       console.log("New order filled")
@@ -187,18 +205,18 @@ export class QueueHandler {
         ...matchedOrder,
         quantity: newOrder.quantity,
       }
-      const outputQueueData = [newOrder, outputMatchedOrder]
+      const outputQueueData = JSON.stringify([newOrder, outputMatchedOrder])
 
       // Publish to output queue
-      await this.publishToQueue(QUEUES.OUTPUT, String(outputQueueData))
+      await this.publishToQueue(QUEUES.OUTPUT, outputQueueData)
 
-      const newMatchedOrder: StockOrder = {
+      const newMatchedOrderData = JSON.stringify({
         ...matchedOrder,
         quantity: matchedOrder.quantity - newOrder.quantity,
-      }
+      })
 
       // Requeue the remaining matched order
-      await this.publishToQueue(QUEUES.INPUT, String(newMatchedOrder))
+      await this.publishToQueue(QUEUES.INPUT, newMatchedOrderData)
     } else if (newOrderStatus == ORDER_STATUS.PARTIALLY_FILLED) {
       // Handle new order partially filled
       console.log("New order partially filled")
@@ -208,17 +226,17 @@ export class QueueHandler {
         quantity: matchedOrder.quantity,
       }
 
-      const outputQueueData = [outputNewOrder, matchedOrder]
+      const outputQueueData = JSON.stringify([outputNewOrder, matchedOrder])
       // Publish to output queue
-      await this.publishToQueue(QUEUES.OUTPUT, String(outputQueueData))
+      await this.publishToQueue(QUEUES.OUTPUT, outputQueueData)
 
       // Requeue the remaining new order
-      const newOrderRemaining: StockOrder = {
+      const newOrderRemainingData = JSON.stringify({
         ...newOrder,
         quantity: newOrder.quantity - matchedOrder.quantity,
-      }
+      })
 
-      await this.publishToQueue(QUEUES.INPUT, String(newOrderRemaining))
+      await this.publishToQueue(QUEUES.INPUT, newOrderRemainingData)
     }
   }
 

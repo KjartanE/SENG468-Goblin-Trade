@@ -54,20 +54,6 @@
       "arguments": {}
     },
     {
-      "name": "market_order_buy_cancel",
-      "vhost": "/",
-      "durable": false,
-      "auto_delete": false,
-      "arguments": {}
-    },
-    {
-      "name": "market_order_sell_cancel",
-      "vhost": "/",
-      "durable": false,
-      "auto_delete": false,
-      "arguments": {}
-    },
-    {
       "name": "limit_order_buy",
       "vhost": "/",
       "durable": false,
@@ -76,20 +62,6 @@
     },
     {
       "name": "limit_order_sell",
-      "vhost": "/",
-      "durable": false,
-      "auto_delete": false,
-      "arguments": {}
-    },
-    {
-      "name": "limit_order_buy_cancel",
-      "vhost": "/",
-      "durable": false,
-      "auto_delete": false,
-      "arguments": {}
-    },
-    {
-      "name": "limit_order_sell_cancel",
       "vhost": "/",
       "durable": false,
       "auto_delete": false,

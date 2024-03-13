@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { Schema, model } from 'mongoose'
 
-export enum OrderStatus {
+export enum ORDER_STATUS {
   PENDING = 'PENDING',
   FILLED = 'FILLED',
   CANCELLED = 'CANCELLED',
@@ -20,7 +20,7 @@ export interface IStockTX {
   wallet_tx_id: string
   parent_stock_tx_id?: string
   stock_id: number
-  order_status: OrderStatus
+  order_status: ORDER_STATUS
   is_buy: boolean
   order_type: OrderType
   stock_price: number

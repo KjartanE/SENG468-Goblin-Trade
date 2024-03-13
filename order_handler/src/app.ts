@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import amqp from 'amqplib'
 import { OrderController } from './controller/order.controller'
 // import { add_mock_data } from './helpers/db'
 
@@ -40,7 +41,6 @@ app.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`)
 })
 
-const amqp = require('amqplib')
 const queue = 'finished_orders'
 var channel, connection
 connectQueue() // call the connect function
@@ -55,11 +55,15 @@ async function connectQueue() {
 
     await channel.assertQueue(queue, { durable: false })
 
-    channel.consume(queue, data => {
+    channel.consume(queue, async (data: amqp.ConsumeMessage | null) => {
+      if (data === null) {
+        return
+      }
+
       console.log(`${Buffer.from(data.content)}`)
 
-      orderController
       channel.ack(data)
+      await orderController.handleStockOrderQueue(data)
     })
   } catch (error) {
     console.log(error)

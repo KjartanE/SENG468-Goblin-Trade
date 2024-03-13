@@ -14,23 +14,6 @@ const WalletTx = require('../models/wallet_tx.model')
  */
 export class WalletController {
   /**
-   * Get Wallet Balance
-   *
-   * @param {string} user_name
-   * @return {*}  {Promise<IWallet>}
-   * @memberof WalletController
-   */
-  async getWallet(user_name: string): Promise<IWallet> {
-    const wallet = await Wallet.findOne({ user_name: user_name })
-
-    if (!wallet) {
-      throw new Error('Wallet not found.')
-    }
-
-    return wallet
-  }
-
-  /**
    * Update Wallet Balance
    *
    * @param {string} user_name
@@ -103,25 +86,6 @@ export class WalletController {
   }
 
   /**
-   * Get Wallet Transactions by TXIds
-   *
-   * @param {string[]} txIds
-   * @return {*}  {Promise<IWalletTX[]>}
-   * @memberof WalletController
-   */
-  async getWalletTransactionsByUserName(
-    user_name: string
-  ): Promise<IWalletTX[]> {
-    const wallet = await this.getWallet(user_name)
-
-    const walletTx = await WalletTx.find({
-      wallet_tx_id: { $in: wallet.transactions },
-    })
-
-    return walletTx
-  }
-
-  /**
    * Get User Wallet by StockTx
    *
    * @param {IStockTX} stockTx
@@ -153,6 +117,8 @@ export class WalletController {
    * @memberof WalletController
    */
   async returnMoneyToWallet(stockTx: IStockTX): Promise<void> {
+    console.log('Returning Money to Wallet: ', stockTx)
+
     // Get Wallet Transaction
     const walletTx = await WalletTx.findOne({
       stock_tx_id: stockTx.stock_tx_id,
