@@ -19,7 +19,7 @@ app.use(express.json())
 
 app.listen(PORT, () => console.log("Server running at port " + PORT))
 
-var channel, compare_channel, connection
+var input_channel, process_channel, compare_channel, connection
 connectQueue() // call the connect function
 
 async function connectQueue() {
@@ -27,15 +27,25 @@ async function connectQueue() {
     const rabbitmqHost = `amqp://${process.env.RABBITMQ_USER}:${process.env.RABBITMQ_PASS}@${process.env.RABBITMQ_HOST}:${process.env.RABBITMQ_PORT}`
 
     connection = await amqp.connect(rabbitmqHost)
-    channel = await connection.createChannel()
+    input_channel = await connection.createChannel()
+    process_channel = await connection.createChannel()
     compare_channel = await connection.createChannel()
 
-    await channel.assertQueue(input_queue, { durable: false })
+    await input_channel.assertQueue(input_queue, { durable: false })
+    await process_channel.assertQueue(input_queue, { durable: false })
     await compare_channel.assertQueue(input_queue, { durable: false })
 
     // Check input queue for new orders and place into matching queues
-    processInputQueue()
+    input_channel.consume(input_queue, (data) => {
+      // add order to appropriate matching queue
+      input_channel.ack(data)
+      addOrder(data)
+    })
+
+    // Check market buy queue
     matchMarketBuytoSell()
+    // Check other queues..
+    // matchLimitBuytoSell()
 
     // publish the processed data to the output queue
     // publishToQueue(output_queue, processedData)
@@ -112,54 +122,54 @@ function addOrder(data) {
   }
 }
 
-// function to check input queue
-function processInputQueue() {
-  channel.consume(input_queue, (data) => {
-    // add order to appropriate matching queue
-    channel.ack(data)
-    addOrder(data)
-  })
-
-}
-
-function matchMarketBuytoSell(data) {
-  channel.consume(input_queue, (data) => {
+function matchMarketBuytoSell() {
+  process_channel.consume(input_queue, (data) => {
+    process_channel.ack(data)
     const buy_order = JSON.parse(`${Buffer.from(data.content)}`)
-    var count = 0
-    const sell_count = compare_channel.checkQueue(limit_order_sell);
-    var lowest_price
+    var lowest_price, first_sell_id, lowest_price_id, looped = 0
     console.log("Matching market buy:", buy_order)
-    console.log("Sell count:", sell_count)
-    console.log("Count:", count)
+
     // iterate through all sell orders
     // finds the lowest price sell order and matches with buy order
-    compare_channel.consume(limit_order_sell, (sell) => {
-      const sell_order = JSON.parse(`${Buffer.from(sell.content)}`)
+    compare_channel.consume(limit_order_sell, (sell_order) => {
+      const sell_order = JSON.parse(`${Buffer.from(sell_order.content)}`)
       if (count == 0) {
         lowest_price = sell_order.price
+        lowest_price_id = sell_order.stock_tx_id
+        first_sell_id = sell_order.stock_tx_id
       }
       else if (sell_order.price < lowest_price) {
         lowest_price = sell_order.price
+        lowest_price_id = sell_order.stock_tx_id
       }
-      
-
-      console.log("To sell:", sell_order)
-      console.log("Lowest price:", lowest_price)
-
-
+      else if (first_sell_id == sell_order.stock_tx_id) {
+        looped = 1
+        return
+      }
+      else if (looped == 1 && lowest_price_id == sell_order.stock_tx_id) {
+        // at best price sell
+        compare_channel.ack(sell_order)
+        
+      }
       count += 1
     })
 
-    channel.ack(data)
+    return
   })
   // sell not found, send buy order back to queue
   publishToQueue(market_order_buy, JSON.stringify(buy_order))
 }
 
+// function to get queue length
+async function getQueueLength(queueName) {
+  const queue = await input_channel.checkQueue(queueName)
+  return queue.messageCount
+}
+
 // function to publish to queue
 async function publishToQueue(queueName, data) {
   try {
-    channel.sendToQueue(queueName, Buffer.from(data))
+    input_channel.sendToQueue(queueName, Buffer.from(data))
   } catch (error) {
     console.log(error)
   }
