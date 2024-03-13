@@ -141,8 +141,8 @@ export class QueueHandler {
       console.log("Handling market buy")
       try {
         const lowestOrder = await this.findLowestPrice(
-          QUEUES.LIMIT_ORDER_SELL,
-          order
+          QUEUES.LIMIT_ORDER_SELL
+          // order
         )
         console.log("lowestOrder", lowestOrder)
 
@@ -275,7 +275,7 @@ export class QueueHandler {
    */
   async findLowestPrice(
     queueName: string,
-    stockOrder: StockOrder
+    // stockOrder: StockOrder
   ): Promise<StockOrder | undefined> {
     const channel = await this.connection.createChannel()
     await channel.assertQueue(queueName, { durable: false })
@@ -283,48 +283,58 @@ export class QueueHandler {
     const queue = await channel.checkQueue(queueName)
     const queue_length = queue.messageCount
 
-    var lowestOrder: StockOrder | undefined = undefined
-    var count = 0
+    console.log("Queue length:", queue_length)
 
-    await channel.consume(queueName, (orderData: any) => {
-      const order: StockOrder = JSON.parse(`${Buffer.from(orderData.content)}`)
-      count++
+    if (queue_length != 0) {
+      return new Promise((resolve, reject) => {
+        var lowestOrder: StockOrder | undefined = undefined
+        var count = 0
 
-      // Check if stock_id matches
-      if (order.stock_id != stockOrder.stock_id) {
-        // Requeue order
-        channel.reject(orderData, true)
-        return
-      }
+        channel.consume(queueName, (orderData: any) => {
+          const order: StockOrder = JSON.parse(`${Buffer.from(orderData.content)}`)
+          count++
+  
+          console.log("Checking:", order.price, " ", order.stock_tx_id)
+          console.log("Current lowest order:", lowestOrder?.price, " ", lowestOrder?.stock_tx_id)
 
-      // check if price is lower
-      if (lowestOrder == undefined || order.price < lowestOrder.price) {
-        lowestOrder = order
-      }
+          // check if price is lower
+          if (lowestOrder == undefined || +order.price < +lowestOrder.price) {
+            if (lowestOrder != undefined) {
+              console.log("Booleans: ", lowestOrder == undefined, order.price < lowestOrder.price)
+            }
+            console.log("Setting lowest order to: ", order.price, " ", order.stock_tx_id)
+            lowestOrder = order
+          }
+  
+          if (count == queue_length) {
+            if (lowestOrder == undefined) {
+              // No orders found
+              console.log("No orders found")
+              // Release the channel
+              channel.close()
+              resolve(undefined)
+              return
+            }
+          }
 
-      if (count == queue_length) {
-        // No orders found
-        if (lowestOrder == undefined) {
-          console.log("No orders found")
-          // Release the channel
-          channel.close()
-          return
-        }
-
-        console.log("Lowest price", lowestOrder.price, lowestOrder.stock_tx_id)
-
-        console.log("Handling matched orders", order)
-        // Dequeue the matched order
-        channel.ack(orderData)
-        // Release the channel
-        channel.close()
-        return lowestOrder
-      }
-
-      // Requeue order
-      channel.reject(orderData, true)
-    })
-    return lowestOrder
+          if ((order.stock_tx_id == lowestOrder.stock_tx_id) && (count > queue_length)) {
+            // At lowest price order. Dequeue it.
+            channel.ack(orderData)
+            // Release the channel
+            channel.close()
+            console.log("Order to return:", lowestOrder.price, " ", lowestOrder.stock_tx_id)
+            resolve(lowestOrder)
+            return
+          }
+  
+          // Requeue order
+          channel.reject(orderData, true)
+        })
+      })
+    }
+    else {
+      return undefined
+    }
   }
 
   /**
