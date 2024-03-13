@@ -1,14 +1,5 @@
 import amqp from "amqplib"
-import { OrderType, StockOrder } from "./misc"
-
-export enum QUEUES {
-  INPUT = "stock_orders",
-  OUTPUT = "finished_orders",
-  MARKET_ORDER_BUY = "market_order_buy",
-  MARKET_ORDER_SELL = "market_order_sell",
-  LIMIT_ORDER_BUY = "limit_order_buy",
-  LIMIT_ORDER_SELL = "limit_order_sell",
-}
+import { ORDER_STATUS, OrderType, QUEUES, StockOrder } from "./misc"
 
 export class QueueHandler {
   private connection: amqp.Connection
@@ -130,7 +121,7 @@ export class QueueHandler {
     if (order.is_buy) {
       console.log("Handling limit buy")
     } else {
-      this.handleOrderToQueue(QUEUES.LIMIT_ORDER_SELL, order)
+      console.log("Handling limit sell")
     }
   }
 
@@ -146,7 +137,7 @@ export class QueueHandler {
       console.log("Handling market buy")
       try {
         const lowestOrder = await this.findLowestPrice(
-          QUEUES.MARKET_ORDER_SELL,
+          QUEUES.LIMIT_ORDER_SELL,
           order
         )
         console.log("lowestOrder", lowestOrder)
@@ -155,8 +146,9 @@ export class QueueHandler {
       }
     } else {
       try {
+        console.log("Handling market sell")
         const highestOrder = await this.findHighestPrice(
-          QUEUES.MARKET_ORDER_SELL,
+          QUEUES.LIMIT_ORDER_BUY,
           order
         )
         console.log("highestOrder", highestOrder)
@@ -172,9 +164,62 @@ export class QueueHandler {
    * @param {StockOrder[]} orders
    * @memberof QueueHandler
    */
-  async handleMatchedOrders(orders: StockOrder[]) {
-    console.log("Handling matched orders", orders)
+  async handleMatchedOrders(newOrder: StockOrder, matchedOrder: StockOrder) {
+    console.log("Handling matched orders", newOrder, matchedOrder)
     // Handle matched orders
+
+    // Check if new order is filled exactly, partially filled or filled
+    const newOrderStatus = this.checkNewOrderIsFilled(newOrder, matchedOrder)
+
+    // Handle new order status
+    if (newOrderStatus == ORDER_STATUS.FILLED_EXACT) {
+      // Handle new order filled exactly
+      console.log("New order filled exactly")
+
+      const outputQueueData = [newOrder, matchedOrder]
+      // Publish to output queue
+      await this.publishToQueue(QUEUES.OUTPUT, String(outputQueueData))
+    } else if (newOrderStatus == ORDER_STATUS.FILLED) {
+      // Handle new order filled
+      console.log("New order filled")
+
+      const outputMatchedOrder: StockOrder = {
+        ...matchedOrder,
+        quantity: newOrder.quantity,
+      }
+      const outputQueueData = [newOrder, outputMatchedOrder]
+
+      // Publish to output queue
+      await this.publishToQueue(QUEUES.OUTPUT, String(outputQueueData))
+
+      const newMatchedOrder: StockOrder = {
+        ...matchedOrder,
+        quantity: matchedOrder.quantity - newOrder.quantity,
+      }
+
+      // Requeue the remaining matched order
+      await this.publishToQueue(QUEUES.INPUT, String(newMatchedOrder))
+    } else if (newOrderStatus == ORDER_STATUS.PARTIALLY_FILLED) {
+      // Handle new order partially filled
+      console.log("New order partially filled")
+
+      const outputNewOrder: StockOrder = {
+        ...newOrder,
+        quantity: matchedOrder.quantity,
+      }
+
+      const outputQueueData = [outputNewOrder, matchedOrder]
+      // Publish to output queue
+      await this.publishToQueue(QUEUES.OUTPUT, String(outputQueueData))
+
+      // Requeue the remaining new order
+      const newOrderRemaining: StockOrder = {
+        ...newOrder,
+        quantity: newOrder.quantity - matchedOrder.quantity,
+      }
+
+      await this.publishToQueue(QUEUES.INPUT, String(newOrderRemaining))
+    }
   }
 
   /**
@@ -182,22 +227,25 @@ export class QueueHandler {
    *
    * @param {StockOrder} newOrder
    * @param {StockOrder} matchedOrder
-   * @return {*}
+   * @return {*}  {ORDER_STATUS}
    * @memberof QueueHandler
    */
-  async checkNewOrderIsFilled(newOrder: StockOrder, matchedOrder: StockOrder) {
+  checkNewOrderIsFilled(
+    newOrder: StockOrder,
+    matchedOrder: StockOrder
+  ): ORDER_STATUS {
     if (newOrder.quantity > matchedOrder.quantity) {
       // Partially filled
       console.log("Partially filled")
-      return false
+      return ORDER_STATUS.PARTIALLY_FILLED
     } else if (newOrder.quantity < matchedOrder.quantity) {
       // Partially filled
       console.log("new Order filled")
-      return true
+      return ORDER_STATUS.FILLED
     } else {
       // Fully filled
       console.log("Fully filled")
-      return true
+      return ORDER_STATUS.FILLED_EXACT
     }
   }
 
@@ -313,19 +361,6 @@ export class QueueHandler {
     })
 
     return highestOrder
-  }
-
-  /**
-   * Handle Order to Queue
-   *
-   * @param {string} queueName
-   * @param {StockOrder} order
-   * @memberof QueueHandler
-   */
-  async handleOrderToQueue(queueName: string, order: StockOrder) {
-    const payload = JSON.stringify(order)
-    this.publishToQueue(queueName, payload)
-    console.log(queueName, payload)
   }
 }
 
