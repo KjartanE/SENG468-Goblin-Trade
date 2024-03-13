@@ -2,7 +2,7 @@ import { useStockTransactions } from '../contexts/StockTransactionsContext'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import { DataGrid, GridColDef, GridToolbar, GridRenderCellParams } from '@mui/x-data-grid'
-import ConfirmationDialogue from './ConfirmationDialogue'
+import ConfirmationDialog from './ConfirmationDialog'
 import React, { useState } from 'react'
 
 
@@ -75,7 +75,7 @@ function StockTransactionsComponent() {
           >
             Cancel
           </Button>
-          <ConfirmationDialogue
+          <ConfirmationDialog
             title="Cancel Order"
             open={confirmationDialogOpen}
             setOpen={setConfirmationDialogOpen}
@@ -84,7 +84,7 @@ function StockTransactionsComponent() {
             }}
           >
             Are you sure you want to cancel this order?
-          </ConfirmationDialogue>
+          </ConfirmationDialog>
         </strong>
       ),
     },
