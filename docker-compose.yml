@@ -103,6 +103,7 @@ services:
       retries: 25
 
   matching_engine:
+    restart: always
     build:
       context: ./matching_engine
       dockerfile: Dockerfile
@@ -113,11 +114,8 @@ services:
       - RABBITMQ_PORT=${RABBITMQ_PORT}
       - RABBITMQ_USER=${RABBITMQ_USER}
       - RABBITMQ_PASS=${RABBITMQ_PASS}
-      - MATCHING_ENGINE_HOST=${MATCHING_ENGINE_HOST}
-      - MATCHING_ENGINE_PORT=${MATCHING_ENGINE_PORT}
     networks:
       - loadbalancing
-    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
