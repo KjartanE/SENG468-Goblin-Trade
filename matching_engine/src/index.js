@@ -19,7 +19,7 @@ app.use(express.json())
 
 app.listen(PORT, () => console.log("Server running at port " + PORT))
 
-var channel, connection
+var channel, compare_channel, connection
 connectQueue() // call the connect function
 
 async function connectQueue() {
@@ -28,12 +28,14 @@ async function connectQueue() {
 
     connection = await amqp.connect(rabbitmqHost)
     channel = await connection.createChannel()
+    compare_channel = await connection.createChannel()
 
     await channel.assertQueue(input_queue, { durable: false })
-    await channel.assertQueue(output_queue, { durable: false })
+    await compare_channel.assertQueue(input_queue, { durable: false })
 
     // Check input queue for new orders and place into matching queues
-    processQueue(input_queue)
+    processInputQueue()
+    matchMarketBuytoSell()
 
     // publish the processed data to the output queue
     // publishToQueue(output_queue, processedData)
@@ -110,21 +112,48 @@ function addOrder(data) {
   }
 }
 
-// function to check queue and process data
-function processQueue(queueName) {
-  channel.consume(queueName, (data) => {
+// function to check input queue
+function processInputQueue() {
+  channel.consume(input_queue, (data) => {
+    // add order to appropriate matching queue
     channel.ack(data)
-    
-    switch (queueName) {
-      case input_queue:
-        // add order to appropriate matching queue
-        addOrder(data)
-        break
-      default:
-        throw new Error("Invalid queue")
-    }
+    addOrder(data)
   })
 
+}
+
+function matchMarketBuytoSell(data) {
+  channel.consume(input_queue, (data) => {
+    const buy_order = JSON.parse(`${Buffer.from(data.content)}`)
+    var count = 0
+    const sell_count = compare_channel.checkQueue(limit_order_sell);
+    var lowest_price
+    console.log("Matching market buy:", buy_order)
+    console.log("Sell count:", sell_count)
+    console.log("Count:", count)
+    // iterate through all sell orders
+    // finds the lowest price sell order and matches with buy order
+    compare_channel.consume(limit_order_sell, (sell) => {
+      const sell_order = JSON.parse(`${Buffer.from(sell.content)}`)
+      if (count == 0) {
+        lowest_price = sell_order.price
+      }
+      else if (sell_order.price < lowest_price) {
+        lowest_price = sell_order.price
+      }
+      
+
+      console.log("To sell:", sell_order)
+      console.log("Lowest price:", lowest_price)
+
+
+      count += 1
+    })
+
+    channel.ack(data)
+  })
+  // sell not found, send buy order back to queue
+  publishToQueue(market_order_buy, JSON.stringify(buy_order))
 }
 
 // function to publish to queue
