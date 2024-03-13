@@ -30,7 +30,6 @@ export class QueueHandler {
 
       // Check input queue for new orders and place into matching queues
       channel.consume(QUEUES.INPUT, (data: any) => {
-        console.log("data", data)
         // add order to appropriate matching queue
         channel.ack(data)
         this.handleOrder(data)
@@ -124,6 +123,12 @@ export class QueueHandler {
    */
   async handleLimitOrder(order: StockOrder) {
     console.log("handleLimitOrder", order)
+    if (order.is_buy) {
+      console.log("Handling limit buy")
+    }
+    else {
+      this.handleOrderToQueue(QUEUES.LIMIT_ORDER_SELL, order)
+    }
   }
 
   /**
@@ -134,6 +139,54 @@ export class QueueHandler {
    */
   async handleMarketOrder(order: StockOrder) {
     console.log("handleMarketOrder", order)
+    if (order.is_buy) {
+      console.log("Handling market buy")
+      try {
+        const queue_length = await this.getQueueLength(QUEUES.LIMIT_ORDER_SELL)
+
+        // match market buy order against limit sell queue
+        const channel = await this.connection.createChannel()
+        await channel.assertQueue(QUEUES.LIMIT_ORDER_SELL, { durable: false })
+        var lowest_price, lowest_price_id, loop_count = 0, found_sell = false
+  
+    
+        await channel.consume(QUEUES.LIMIT_ORDER_SELL, async (sell_data: any) => {
+          const sell_order: StockOrder = JSON.parse(`${Buffer.from(sell_data.content)}`)
+
+            loop_count++
+
+            if (lowest_price == undefined || sell_order.price < lowest_price) {
+              lowest_price = sell_order.price
+              lowest_price_id = sell_order.stock_tx_id
+            }
+
+            if (loop_count == queue_length) {
+              console.log("Lowest price", lowest_price, lowest_price_id)
+              found_sell = true
+            }
+            else if (found_sell && sell_order.stock_tx_id == lowest_price_id) {
+
+
+              // TODO: Handle matched orders
+              console.log("Handling matched orders", order, sell_order)
+
+
+              // Dequeue the matched sell order
+              channel.ack(sell_data)
+              // Release the channel
+              channel.close()
+              return
+            }
+            // Requeue order
+            channel.reject(sell_data, true)
+        })
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    else {
+      this.handleOrderToQueue(QUEUES.MARKET_ORDER_SELL, order)
+    }
   }
 
   /**
