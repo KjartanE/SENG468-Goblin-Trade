@@ -32,7 +32,8 @@ const loginValidator = [
 const login = async (req, res) => {
   try {
     //validate request
-    if (!checkValidation(req, res)) {
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 
@@ -43,7 +44,7 @@ const login = async (req, res) => {
 
     sendSuccessResponse(res, { token: response.token })
   } catch (err) {
-    sendErrorResponse(res, 401, err)
+    sendErrorResponse(res, 200, err)
   }
 }
 router.post('/login', loginValidator, login)
@@ -57,7 +58,8 @@ router.post('/login', loginValidator, login)
 const self = async (req, res) => {
   try {
     //validate request
-    if (!checkValidation(req, res)) {
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 
@@ -89,7 +91,8 @@ const registerValidator = [
 const register = async (req, res) => {
   try {
     //validate request
-    if (!checkValidation(req, res)) {
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 200, 'Invalid request')
       return
     }
 
@@ -103,7 +106,7 @@ const register = async (req, res) => {
 
     sendSuccessResponse(res, null)
   } catch (err) {
-    sendErrorResponse(res, 401, err)
+    sendErrorResponse(res, 200, err)
   }
 }
 router.post('/register', registerValidator, register)

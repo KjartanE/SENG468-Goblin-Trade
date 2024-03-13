@@ -25,7 +25,8 @@ router.use(bodyParser.json())
 const getWalletBalance = async (req, res) => {
   try {
     //validate request
-    if (!checkValidation(req, res)) {
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 
@@ -55,7 +56,8 @@ const addMoneyValidator = [
 const addMoneyToWallet = async (req, res) => {
   try {
     //validate request
-    if (!checkValidation(req, res)) {
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 
@@ -81,7 +83,8 @@ router.post('/addMoneyToWallet', addMoneyValidator, addMoneyToWallet)
 const getWalletTransactions = async (req, res) => {
   try {
     //validate request
-    if (!checkValidation(req, res)) {
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 

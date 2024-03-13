@@ -1,11 +1,10 @@
 /* eslint-disable no-unused-vars */
 import { Schema, model } from 'mongoose'
 
-export enum OrderStatus {
-  PENDING = 'PENDING',
-  FILLED = 'FILLED',
+export enum ORDER_STATUS {
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
-  REJECTED = 'REJECTED',
 }
 
 export enum OrderType {
@@ -16,11 +15,12 @@ export enum OrderType {
 }
 
 export interface IStockTX {
+  user_name: string
   stock_tx_id: string
   wallet_tx_id: string
   parent_stock_tx_id?: string
   stock_id: number
-  order_status: OrderStatus
+  order_status: ORDER_STATUS
   is_buy: boolean
   order_type: OrderType
   stock_price: number
@@ -40,6 +40,7 @@ export interface StockOrder {
 
 export const stockTXSchema = new Schema<IStockTX>(
   {
+    user_name: { type: String, required: true },
     stock_tx_id: { type: String, required: true, unique: true },
     wallet_tx_id: { type: String, required: true, unique: true },
     parent_stock_tx_id: { type: String, required: false },

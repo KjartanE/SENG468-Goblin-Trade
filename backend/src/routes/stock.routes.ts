@@ -24,7 +24,8 @@ router.use(bodyParser.json())
 const getStockPrices = async (req, res) => {
   try {
     //validate request
-    if (!checkValidation(req, res)) {
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 
@@ -48,13 +49,15 @@ router.get('/getStockPrices', tokenValidator, getStockPrices)
 const getStockPortfolio = async (req, res) => {
   try {
     //validate request
-    if (!checkValidation(req, res)) {
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 
     const auth = await handleToken(req, res)
 
     const response = await stockController.getStockPortfolio(auth.user_name)
+    console.log('getStockPortfolio: ', response)
 
     sendSuccessResponse(res, response)
   } catch (err) {
@@ -77,7 +80,8 @@ const createStockValidator = [
 const createStock = async (req, res) => {
   try {
     //validate request
-    if (!checkValidation(req, res)) {
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 
@@ -109,7 +113,8 @@ const addStockToUserValidator = [
 const addStockToUser = async (req, res) => {
   try {
     //validate request
-    if (!checkValidation(req, res)) {
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 

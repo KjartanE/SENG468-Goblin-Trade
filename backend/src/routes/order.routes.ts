@@ -33,7 +33,8 @@ const placeStockOrderValidator = [
 const placeStockOrder = async (req, res) => {
   try {
     //validate request
-    if (!checkValidation(req, res)) {
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 
@@ -70,8 +71,9 @@ router.post('/placeStockOrder', placeStockOrderValidator, placeStockOrder)
  */
 const getStockTransactions = async (req, res) => {
   try {
-    // validate request
-    if (!checkValidation(req, res)) {
+    //validate request
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 
@@ -101,8 +103,9 @@ const cancelStockOrderValidator = [
  */
 const cancelStockTransaction = async (req, res) => {
   try {
-    // validate request
-    if (!checkValidation(req, res)) {
+    //validate request
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 

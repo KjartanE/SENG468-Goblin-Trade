@@ -43,10 +43,9 @@ export const sendSuccessResponse = (res, data) => {
  * @param {*} res
  * @return {*}
  */
-export const checkValidation = (req, res) => {
+export const checkValidation = req => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
-    sendErrorResponse(res, 400, errors.array()[0].msg)
     return false
   }
   return true

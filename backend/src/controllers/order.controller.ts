@@ -8,7 +8,7 @@ import { IWallet } from '../models/wallet.model'
 const queue = 'stock_orders'
 const StockTx = require('../models/stock_tx.model')
 
-export enum OrderStatus {
+export enum ORDER_STATUS {
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
@@ -36,29 +36,42 @@ export class OrderController {
     user_name: string,
     stockOrder: StockOrder
   ): Promise<void> {
-    const amount = stockOrder.price * stockOrder.quantity
-
-    if (stockOrder.is_buy) {
-      await this.handleBuyStockOrder(user_name, stockOrder)
-    } else {
-      await this.handleSellStockOrder(user_name, stockOrder)
-    }
+    console.log('Place Stock Order:', stockOrder)
 
     const stockTxId = await uuid()
     const walletTxId = await uuid()
 
-    // Create Wallet Transaction
-    await this.walletController.createWalletTx(
-      stockOrder.is_buy,
-      amount,
-      stockTxId,
-      walletTxId
-    )
-    // Update Wallet Transactions in Wallet
-    await this.walletController.updateWalletTransactions(user_name, walletTxId)
+    if (stockOrder.is_buy) {
+      if (stockOrder.order_type === 'MARKET') {
+        const stock = await this.stockController.getStockPrice(
+          stockOrder.stock_id
+        )
+        stockOrder.price = stock.current_price
+      }
+
+      await this.handleBuyStockOrder(user_name, stockOrder)
+
+      const amount = stockOrder.price * stockOrder.quantity
+
+      // Create Wallet Transaction
+      await this.walletController.createWalletTx(
+        stockOrder.is_buy,
+        amount,
+        stockTxId,
+        walletTxId
+      )
+      // Update Wallet Transactions in Wallet
+      await this.walletController.updateWalletTransactions(
+        user_name,
+        walletTxId
+      )
+    } else {
+      await this.handleSellStockOrder(user_name, stockOrder)
+      await this.stockController.updateStockPrice(stockOrder)
+    }
 
     // Create Stock Transaction
-    await this.createStockTx(stockOrder, stockTxId, walletTxId)
+    await this.createStockTx(stockOrder, stockTxId, walletTxId, user_name)
 
     // Queue Stock Order
     await this.queueStockOrder({ ...stockOrder, stock_tx_id: stockTxId })
@@ -130,14 +143,16 @@ export class OrderController {
     stockOrder: StockOrder,
     stockTxId: string,
     walletTxId: string,
+    user_name: string,
     parent_stock_tx_id?: string
   ): Promise<void> {
     const stockTx = {
+      user_name: user_name,
       stock_tx_id: stockTxId,
       wallet_tx_id: walletTxId,
       parent_stock_tx_id: parent_stock_tx_id || null,
       stock_id: stockOrder.stock_id,
-      order_status: OrderStatus.IN_PROGRESS,
+      order_status: ORDER_STATUS.IN_PROGRESS,
       is_buy: stockOrder.is_buy,
       order_type: stockOrder.order_type,
       stock_price: stockOrder.price,
@@ -171,8 +186,8 @@ export class OrderController {
     await this.queueStockOrder(StockCancelOrder)
 
     // Update Stock Transaction
-    if (stockTx.order_status === OrderStatus.IN_PROGRESS) {
-      stockTx.order_status = OrderStatus.CANCELLED
+    if (stockTx.order_status === ORDER_STATUS.IN_PROGRESS) {
+      stockTx.order_status = ORDER_STATUS.CANCELLED
       await stockTx.save()
 
       // return money to wallet
@@ -199,28 +214,8 @@ export class OrderController {
    * @memberof OrderController
    */
   async getStockTransactionsByUserName(user_name: string): Promise<IStockTX[]> {
-    const walletTxOrders =
-      await this.walletController.getWalletTransactionsByUserName(user_name)
+    const stockTransactions = await StockTx.find({ user_name: user_name })
 
-    const walletTxIds = walletTxOrders.map(tx => tx.wallet_tx_id)
-    const stockTransactions = await StockTx.find({
-      wallet_tx_id: { $in: walletTxIds },
-    })
-
-    return stockTransactions
-  }
-
-  /**
-   * Get Stock Transactions By TXIds
-   *
-   * @param {string[]} stockTxIds
-   * @return {*}  {Promise<StockOrder[]>}
-   * @memberof OrderController
-   */
-  async getStockTransactionsByTXIds(stockTxIds: string[]): Promise<IStockTX[]> {
-    const stockTransactions = await StockTx.find({
-      stock_tx_id: { $in: stockTxIds },
-    })
     return stockTransactions
   }
 
@@ -247,40 +242,5 @@ export class OrderController {
     } finally {
       if (connection) await connection.close()
     }
-  }
-
-  /**
-   *  Handle Stock Order
-   *
-   * @param {StockOrder} stockOrder
-   * @return {*}  {Promise<void>}
-   * @memberof OrderController
-   */
-  async HandleStockOrder(stockOrder: StockOrder): Promise<void> {
-    const stockTx = await StockTx.findOne({
-      stock_tx_id: stockOrder.stock_tx_id,
-    })
-    if (!stockTx) {
-      throw new Error('Invalid Stock Transaction ID')
-    }
-
-    if (stockOrder.cancel_order) {
-      stockTx.order_status = OrderStatus.CANCELLED
-      await stockTx.save()
-      await this.walletController.returnMoneyToWallet(stockTx)
-      return
-    }
-
-    stockTx.order_status = OrderStatus.COMPLETED
-    await stockTx.save()
-
-    const wallet = await this.walletController.getUserWalletByStockTx(stockTx)
-
-    // update stock portfolio
-    await this.stockController.addStockToUserPortfolio(
-      wallet.user_name,
-      stockTx.stock_id,
-      stockTx.quantity
-    )
   }
 }

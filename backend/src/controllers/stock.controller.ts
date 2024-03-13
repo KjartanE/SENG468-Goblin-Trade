@@ -1,5 +1,6 @@
 import { IPortfolio } from '../models/portfolio.model'
 import { IStock } from '../models/stock.model'
+import { StockOrder } from '../models/stock_tx.model'
 
 const Stock = require('../models/stock.model')
 const Portfolio = require('../models/portfolio.model')
@@ -27,6 +28,39 @@ export class StockController {
     }
 
     return stockList
+  }
+
+  /**
+   *  Get Stock Price
+   *
+   * @param {number} stock_id
+   * @return {*}  {Promise<IStock>}
+   * @memberof StockController
+   */
+  async getStockPrice(stock_id: number): Promise<IStock> {
+    const stock = await Stock.findOne({ stock_id: stock_id })
+    if (!stock) {
+      throw new Error('Stock not found.')
+    }
+
+    return stock
+  }
+
+  /**
+   * Update Stock Price
+   *
+   * @param {IStockTX} stockTx
+   * @return {*}  {Promise<IStock>}
+   * @memberof StockController
+   */
+  async updateStockPrice(stockOrder: StockOrder): Promise<IStock> {
+    const stockToUpdate = await Stock.findOne({ stock_id: stockOrder.stock_id })
+    if (!stockToUpdate) {
+      throw new Error('Stock not found.')
+    }
+    stockToUpdate.current_price = stockOrder.price
+    await stockToUpdate.save()
+    return stockToUpdate
   }
 
   /**
@@ -125,11 +159,13 @@ export class StockController {
     if (portfolio) {
       portfolio.quantity_owned = portfolio.quantity_owned + quantity
 
-      if(portfolio.quantity_owned === 0) {
-        const response = await Portfolio.deleteOne({ user_name: user_name, stock_id: stock_id })
+      if (portfolio.quantity_owned === 0) {
+        const response = await Portfolio.deleteOne({
+          user_name: user_name,
+          stock_id: stock_id,
+        })
         return response
       }
-
 
       await portfolio.save()
       return portfolio

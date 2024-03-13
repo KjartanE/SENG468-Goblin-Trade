@@ -2,10 +2,9 @@
 import { Schema, model } from 'mongoose'
 
 export enum ORDER_STATUS {
-  PENDING = 'PENDING',
-  FILLED = 'FILLED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
-  REJECTED = 'REJECTED',
 }
 
 export enum OrderType {

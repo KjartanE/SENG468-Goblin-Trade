@@ -6,11 +6,11 @@ import { StockController } from './stock.controller'
 const StockTx = require('../models/stock_tx.model')
 
 export enum ORDER_STATUS {
-  PENDING = 'PENDING',
-  FILLED = 'FILLED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
-  REJECTED = 'REJECTED',
 }
+
 /**
  * Order Controller
  *
@@ -78,7 +78,7 @@ export class OrderController {
     if (!stockTx) {
       throw new Error('Invalid Stock Transaction ID')
     }
-    stockTx.order_status = ORDER_STATUS.FILLED
+    stockTx.order_status = ORDER_STATUS.COMPLETED
     await stockTx.save()
 
     // Update Stock Transaction
