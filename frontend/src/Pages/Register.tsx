@@ -12,7 +12,7 @@ import { Container } from '@mui/material'
 export const registerSchema = Yup.object().shape({
   name: Yup.string().required('Required'),
   username: Yup.string().required('Required'),
-  password: Yup.string().required('Required').min(3, 'Too Short!'),
+  password: Yup.string().required('Required').min(6, 'Too Short!'),
   password2: Yup.string()
     .required('Required')
     .test('passwords-match', 'Passwords must match', function (value) {
