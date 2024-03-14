@@ -1,5 +1,5 @@
 import amqp from "amqplib"
-import { ORDER_STATUS, OrderType, QUEUES, StockOrder } from "./misc"
+import { ORDER_STATUS, OrderType, QUEUES, StockOrder, StockCancelOrder } from "./misc"
 
 export class QueueHandler {
   private connection: amqp.Connection
@@ -102,13 +102,62 @@ export class QueueHandler {
   /**
    * Cancel Order
    *
-   * @param {StockOrder} order
+   * @param {StockCancelOrder} order
    * @memberof QueueHandler
    */
-  async cancelOrder(order: StockOrder) {
-    console.log("cancelOrder", order)
+  async cancelOrder(order: StockCancelOrder) {
     // cancel order
     // remove order from queue
+
+    var cancel_order = order._doc
+    var queueName = cancel_order.is_buy ? QUEUES.BUY_ORDERS : QUEUES.SELL_ORDERS
+
+    const channel = await this.connection.createChannel()
+    await channel.assertQueue(queueName, { durable: false })
+
+    const queue = await channel.checkQueue(queueName)
+    const queue_length = queue.messageCount
+
+    if (queue_length != 0) {
+      return new Promise((resolve, reject) => {
+        var count = 0
+
+        // search through queue for order to cancel
+        channel.consume(queueName, (orderData: any) => {
+          const order: StockOrder = JSON.parse(`${Buffer.from(orderData.content)}`)
+          count++
+  
+          if (order.stock_tx_id == cancel_order.stock_tx_id) {
+
+            console.log("Found stock to cancel: ", order.stock_tx_id)
+
+            // Order to cancel found. Dequeue it.
+            // Release the channel
+            channel.ack(orderData)
+            channel.close()
+
+            order.cancel_order = true
+            this.publishToQueue(QUEUES.OUTPUT, JSON.stringify([order]))
+
+            resolve(true)
+            return
+          } else if (count >= queue_length) {
+            console.log("Unable to find order to cancel: ", order.stock_tx_id)
+
+            // Order not found
+            // Release the channel
+            channel.close()
+            resolve(false)
+            return
+          }
+          // Requeue order
+          channel.reject(orderData, true)
+        })
+      })
+    }
+    else {
+      return false
+    }
   }
 
   /**

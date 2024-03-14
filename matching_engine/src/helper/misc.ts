@@ -27,3 +27,10 @@ export interface StockOrder {
   price: number
   cancel_order?: boolean
 }
+
+export interface StockCancelOrder {
+  '$__'?: any
+  '$isNew'?: any
+  _doc?: any
+  cancel_order?: boolean
+}
