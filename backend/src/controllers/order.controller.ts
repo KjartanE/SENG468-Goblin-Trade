@@ -4,7 +4,7 @@ import { v4 as uuid } from 'uuid'
 import { WalletController } from './wallet.controller'
 import { StockController } from './stock.controller'
 
-const queue = 'stock_orders'
+const queue = 'incoming_orders'
 const StockTx = require('../models/stock_tx.model')
 
 export enum ORDER_STATUS {

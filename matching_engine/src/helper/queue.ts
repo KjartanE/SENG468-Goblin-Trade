@@ -119,9 +119,41 @@ export class QueueHandler {
    */
   async handleLimitOrder(order: StockOrder) {
     if (order.is_buy) {
-      this.publishToQueue(QUEUES.LIMIT_ORDER_BUY, JSON.stringify(order))
+      try {
+        console.log("Handling limit buy")
+        const lowestOrder = await this.findLowestPrice(
+          QUEUES.SELL_ORDERS,
+          order
+        )
+        console.log("lowestOrder", lowestOrder)
+
+        if (lowestOrder != undefined) {
+          this.handleMatchedOrders(order, lowestOrder)
+        } else {
+          console.log("No matching orders found")
+          this.publishToQueue(QUEUES.BUY_ORDERS, JSON.stringify(order))
+        }
+      } catch (error) {
+        console.log(error)
+      }
     } else {
-      this.publishToQueue(QUEUES.LIMIT_ORDER_SELL, JSON.stringify(order))
+      try {
+        console.log("Handling limit sell")
+        const highestOrder = await this.findHighestPrice(
+          QUEUES.BUY_ORDERS,
+          order
+        )
+        console.log("highestOrder", highestOrder)
+
+        if (highestOrder != undefined) {
+          this.handleMatchedOrders(order, highestOrder)
+        } else {
+          console.log("No matching orders found")
+          this.publishToQueue(QUEUES.SELL_ORDERS, JSON.stringify(order))
+        }
+      } catch (error) {
+        console.log(error)
+      }
     }
   }
 
@@ -136,8 +168,8 @@ export class QueueHandler {
       console.log("Handling market buy")
       try {
         const lowestOrder = await this.findLowestPrice(
-          QUEUES.LIMIT_ORDER_SELL
-          // order
+          QUEUES.SELL_ORDERS,
+          order
         )
         console.log("lowestOrder", lowestOrder)
 
@@ -145,7 +177,7 @@ export class QueueHandler {
           this.handleMatchedOrders(order, lowestOrder)
         } else {
           console.log("No matching orders found")
-          this.publishToQueue(QUEUES.MARKET_ORDER_BUY, JSON.stringify(order))
+          this.publishToQueue(QUEUES.BUY_ORDERS, JSON.stringify(order))
         }
       } catch (error) {
         console.log(error)
@@ -154,7 +186,7 @@ export class QueueHandler {
       try {
         console.log("Handling market sell")
         const highestOrder = await this.findHighestPrice(
-          QUEUES.LIMIT_ORDER_BUY,
+          QUEUES.BUY_ORDERS,
           order
         )
         console.log("highestOrder", highestOrder)
@@ -163,7 +195,7 @@ export class QueueHandler {
           this.handleMatchedOrders(order, highestOrder)
         } else {
           console.log("No matching orders found")
-          this.publishToQueue(QUEUES.MARKET_ORDER_SELL, JSON.stringify(order))
+          this.publishToQueue(QUEUES.SELL_ORDERS, JSON.stringify(order))
         }
       } catch (error) {
         console.log(error)
@@ -270,7 +302,7 @@ export class QueueHandler {
    */
   async findLowestPrice(
     queueName: string,
-    // stockOrder: StockOrder
+    stockOrder: StockOrder
   ): Promise<StockOrder | undefined> {
     const channel = await this.connection.createChannel()
     await channel.assertQueue(queueName, { durable: false })
@@ -282,13 +314,45 @@ export class QueueHandler {
       return new Promise((resolve, reject) => {
         var lowestOrder: StockOrder | undefined = undefined
         var count = 0
+        var ignoreMarketOrders = false
+
+        // if order to match is a market order, only look at limit orders
+        // otherwise if order to match is a limit order, allow matching with
+        // market orders
+        if (stockOrder.order_type == OrderType.MARKET) {
+          ignoreMarketOrders = true
+        }
 
         channel.consume(queueName, (orderData: any) => {
           const order: StockOrder = JSON.parse(`${Buffer.from(orderData.content)}`)
           count++
 
-          // check if price is lower
-          if (lowestOrder == undefined || +order.price < +lowestOrder.price) {
+          if (order.order_type == OrderType.MARKET && ignoreMarketOrders) {
+            // ignore market order
+            channel.reject(orderData, true)
+          }
+          else if (order.order_type == OrderType.MARKET && !ignoreMarketOrders) {
+            // accept market order
+            lowestOrder = order
+            channel.ack(orderData)
+            channel.close()
+            resolve(lowestOrder)
+            return
+          }
+
+          if (stockOrder.order_type == OrderType.LIMIT && order.order_type == OrderType.LIMIT) {
+            // if buy order less than or equal to limit price is found, accept order and match
+            if (+order.price <= +stockOrder.price) {
+              lowestOrder = order
+              channel.ack(orderData)
+              channel.close()
+              resolve(lowestOrder)
+              return
+            }
+          }
+
+          // check if price is lower if serving a market order
+          if (stockOrder.order_type == OrderType.MARKET && (lowestOrder == undefined || +order.price < +lowestOrder.price)) {
             lowestOrder = order
           }
   
@@ -302,10 +366,10 @@ export class QueueHandler {
             }
           }
 
-          if ((order.stock_tx_id == lowestOrder.stock_tx_id) && (count > queue_length)) {
+          if (lowestOrder != undefined && (order.stock_tx_id == lowestOrder.stock_tx_id) && (count > queue_length)) {
             // At lowest price order. Dequeue it.
-            channel.ack(orderData)
             // Release the channel
+            channel.ack(orderData)
             channel.close()
             resolve(lowestOrder)
             return
@@ -341,13 +405,45 @@ export class QueueHandler {
       return new Promise((resolve, reject) => {
         var highestOrder: StockOrder | undefined = undefined
         var count = 0
+        var ignoreMarketOrders = false
+
+        // if order to match is a market order, only look at limit orders
+        // otherwise if order to match is a limit order, allow matching with
+        // market orders
+        if (stockOrder.order_type == OrderType.MARKET) {
+          ignoreMarketOrders = true
+        }
 
         channel.consume(queueName, (orderData: any) => {
           const order: StockOrder = JSON.parse(`${Buffer.from(orderData.content)}`)
           count++
 
-          // check if price is higher
-          if (highestOrder == undefined || +order.price > +highestOrder.price) {
+          if (order.order_type == OrderType.MARKET && ignoreMarketOrders) {
+            // ignore market order
+            channel.reject(orderData, true)
+          }
+          else if (order.order_type == OrderType.MARKET && !ignoreMarketOrders) {
+            // accept market order
+            highestOrder = order
+            channel.ack(orderData)
+            channel.close()
+            resolve(highestOrder)
+            return
+          }
+
+          if (stockOrder.order_type == OrderType.LIMIT && order.order_type == OrderType.LIMIT) {
+            // if sell order of at least limit price found, accept order and match
+            if (+order.price >= +stockOrder.price) {
+              highestOrder = order
+              channel.ack(orderData)
+              channel.close()
+              resolve(highestOrder)
+              return
+            }
+          }
+
+          // check if price is higher if serving a market order
+          if (stockOrder.order_type == OrderType.MARKET && (highestOrder == undefined || +order.price > +highestOrder.price)) {
             highestOrder = order
           }
   
@@ -361,10 +457,10 @@ export class QueueHandler {
             }
           }
 
-          if ((order.stock_tx_id == highestOrder.stock_tx_id) && (count > queue_length)) {
+          if (highestOrder != undefined && (order.stock_tx_id == highestOrder.stock_tx_id) && (count > queue_length)) {
             // At highest price order. Dequeue it.
-            channel.ack(orderData)
             // Release the channel
+            channel.ack(orderData)
             channel.close()
             resolve(highestOrder)
             return

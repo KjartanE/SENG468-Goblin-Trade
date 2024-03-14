@@ -6,12 +6,10 @@ export enum OrderType {
 }
 
 export enum QUEUES {
-  INPUT = "stock_orders",
+  INPUT = "incoming_orders",
   OUTPUT = "finished_orders",
-  MARKET_ORDER_BUY = "market_order_buy",
-  MARKET_ORDER_SELL = "market_order_sell",
-  LIMIT_ORDER_BUY = "limit_order_buy",
-  LIMIT_ORDER_SELL = "limit_order_sell",
+  BUY_ORDERS = "stock_buy_orders",
+  SELL_ORDERS = "stock_sell_orders",
 }
 
 export enum ORDER_STATUS {

@@ -58,6 +58,7 @@ const placeStockOrder = async (req, res) => {
 
     sendSuccessResponse(res, null)
   } catch (err) {
+    console.log(err)
     sendErrorResponse(res, 401, err)
   }
 }
