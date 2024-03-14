@@ -22,7 +22,7 @@ async function connectQueue() {
     const connection = await amqp.connect(rabbitmqHost)
 
     const queueHandler = new QueueHandler(connection) // Initialize QueueHandler
-    queueHandler.connectQueue() // Connect to RabbitMQ
+    queueHandler.startQueues() // Connect to RabbitMQ
     
   } catch (error) {
     console.log(error)

@@ -44,16 +44,45 @@
       "vhost": "/",
       "durable": false,
       "auto_delete": false,
-      "arguments": {}
+      "arguments": { 
+        "x-dead-letter-exchange": "dlx"
+      } 
     },
     {
       "name": "stock_sell_orders",
       "vhost": "/",
       "durable": false,
       "auto_delete": false,
+      "arguments": { 
+        "x-dead-letter-exchange": "dlx"
+      } 
+    },
+    {
+      "name": "expired_orders",
+      "vhost": "/",
+      "durable": false,
+      "auto_delete": false,
       "arguments": {}
     }
   ],
-  "exchanges": [],
-  "bindings": []
+  "exchanges": [
+    {
+      "name": "dlx",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": false,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "dlx",
+      "vhost": "/",
+      "destination": "expired_orders",
+      "destination_type": "queue",
+      "arguments": {}
+    }
+  ]
 }

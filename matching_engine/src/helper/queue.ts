@@ -1,6 +1,8 @@
 import amqp from "amqplib"
 import { ORDER_STATUS, OrderType, QUEUES, StockOrder, StockCancelOrder } from "./misc"
 
+const EXPIRATION_TIME = 900000 // 15 minutes
+
 export class QueueHandler {
   private connection: amqp.Connection
 
@@ -9,7 +11,20 @@ export class QueueHandler {
   }
 
   /**
-   * Connect to RabbitMQ
+   * Start input and expired queue connections
+   *
+   * @memberof QueueHandler
+   */
+  async startQueues() {
+    try {
+      await Promise.all([this.connectQueue(), this.handleExpiredOrders()])
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  /**
+   * Connect to RabbitMQ input queue
    *
    * @memberof QueueHandler
    */
@@ -35,6 +50,33 @@ export class QueueHandler {
   }
 
   /**
+   * Connect to RabbitMQ expired orders queue
+   *
+   * @memberof QueueHandler
+   */
+  async handleExpiredOrders() {
+    const channel = await this.connection.createChannel()
+  
+    await channel.assertQueue(QUEUES.EXPIRED_ORDERS, { durable: false })
+  
+    channel.consume(QUEUES.EXPIRED_ORDERS, (orderData) => {
+      if (orderData == null) {
+        return
+      }
+        // Parse the original message content
+        const order: StockOrder = JSON.parse(`${Buffer.from(orderData.content)}`)
+  
+        // Set order to expired and acknowledge
+        order.expired = true
+        channel.ack(orderData);
+        console.log("Expiring order: ", order.stock_tx_id)
+  
+        // Send expired order to output queue
+        this.publishToQueue(QUEUES.OUTPUT, JSON.stringify([order]))
+    });
+  }
+
+  /**
    * Get Queue Length
    *
    * @param {*} queueName
@@ -44,7 +86,16 @@ export class QueueHandler {
   async getQueueLength(queueName: string) {
     const channel = await this.connection.createChannel()
 
-    await channel.assertQueue(queueName, { durable: false })
+    if (queueName == QUEUES.BUY_ORDERS || queueName == QUEUES.SELL_ORDERS) {
+      await channel.assertQueue(queueName, { 
+        durable: false, 
+        arguments: { 
+          'x-dead-letter-exchange': 'dlx'
+        } 
+      })
+    } else {
+      await channel.assertQueue(queueName, { durable: false })
+    }
 
     const queue = await channel.checkQueue(queueName)
 
@@ -65,9 +116,29 @@ export class QueueHandler {
       console.log('publishToQueue', queueName, data);
       const channel = await this.connection.createChannel()
 
-      await channel.assertQueue(queueName, { durable: false })
+      if (queueName == QUEUES.BUY_ORDERS || queueName == QUEUES.SELL_ORDERS) {
+        // Await with deadletter exchange for stock buy and sell queues
+        await channel.assertQueue(QUEUES.EXPIRED_ORDERS, { durable: false })
+        await channel.assertQueue(queueName, { 
+          durable: false, 
+          arguments: { 
+            'x-dead-letter-exchange': 'dlx'
+          } 
+        })
 
-      channel.sendToQueue(queueName, Buffer.from(data))
+        console.log("Publishing perishable order")
+
+        channel.sendToQueue(queueName, Buffer.from(data), {
+          // Stock orders expire after 15 minutes
+          expiration: EXPIRATION_TIME,
+        })
+      } else {
+
+        // No dead letter exhange required for other queues
+        await channel.assertQueue(queueName, { durable: false })
+
+        channel.sendToQueue(queueName, Buffer.from(data))
+      }
 
       await channel.close()
 
@@ -354,7 +425,12 @@ export class QueueHandler {
     stockOrder: StockOrder
   ): Promise<StockOrder | undefined> {
     const channel = await this.connection.createChannel()
-    await channel.assertQueue(queueName, { durable: false })
+    await channel.assertQueue(queueName, { 
+      durable: false, 
+      arguments: { 
+        'x-dead-letter-exchange': 'dlx'
+      } 
+    })
 
     const queue = await channel.checkQueue(queueName)
     const queue_length = queue.messageCount
@@ -445,7 +521,12 @@ export class QueueHandler {
     stockOrder: StockOrder
   ): Promise<StockOrder | undefined> {
     const channel = await this.connection.createChannel()
-    await channel.assertQueue(queueName, { durable: false })
+    await channel.assertQueue(queueName, { 
+      durable: false, 
+      arguments: { 
+        'x-dead-letter-exchange': 'dlx'
+      } 
+    })
 
     const queue = await channel.checkQueue(queueName)
     const queue_length = queue.messageCount

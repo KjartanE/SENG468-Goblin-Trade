@@ -10,6 +10,7 @@ export enum QUEUES {
   OUTPUT = "finished_orders",
   BUY_ORDERS = "stock_buy_orders",
   SELL_ORDERS = "stock_sell_orders",
+  EXPIRED_ORDERS = "expired_orders",
 }
 
 export enum ORDER_STATUS {
@@ -26,6 +27,7 @@ export interface StockOrder {
   quantity: number
   price: number
   cancel_order?: boolean
+  expired?: boolean
 }
 
 export interface StockCancelOrder {
