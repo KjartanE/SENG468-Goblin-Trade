@@ -48,10 +48,6 @@ export class WalletController {
     wallet.balance = wallet.balance + amount
     await wallet.save()
 
-    //create wallet transaction
-    // const walletTxId = await uuid()
-    // await this.createWalletTx(true, amount, null, walletTxId, user_name)
-
     return wallet
   }
 
@@ -74,11 +70,7 @@ export class WalletController {
     const wallet = await Wallet.findOne({ user_name: user_name })
     const amount = stockOrder.price * stockOrder.quantity
 
-    if (wallet.balance < amount) {
-      throw new Error('Insufficient balance')
-    }
-
-    wallet.balance = wallet.balance - amount
+    wallet.balance = wallet.balance + amount
     await wallet.save()
 
     // Create Wallet Transaction

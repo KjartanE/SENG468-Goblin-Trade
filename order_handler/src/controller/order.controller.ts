@@ -2,6 +2,7 @@ import amqp from 'amqplib'
 import { IStockTX, StockOrder } from '../models/stock_tx.model'
 import { WalletController } from './wallet.controller'
 import { StockController } from './stock.controller'
+import { v4 as uuid } from 'uuid'
 
 const StockTx = require('../models/stock_tx.model')
 
@@ -73,6 +74,9 @@ export class OrderController {
    */
   async handleStockOrder(stockOrder: StockOrder): Promise<void> {
     console.log('Handling Stock Order: ', stockOrder)
+
+    var stockTxId: string = ''
+
     // Check if Stock Order is to be cancelled
     if (stockOrder.cancel_order) {
       await this.cancelStockOrder(stockOrder)
@@ -91,6 +95,8 @@ export class OrderController {
       stockTx.order_status = ORDER_STATUS.PARTIAL_FULFILLED
       await stockTx.save()
 
+      stockTxId = uuid()
+
       //create new stockTx for remaining quantity
       const childStockOrder: StockOrder = {
         stock_id: stockTx.stock_id,
@@ -98,16 +104,18 @@ export class OrderController {
         order_type: ORDER_TYPE.MARKET,
         price: stockTx.stock_price,
         quantity: stockOrder.quantity,
-        stock_tx_id: stockTx.stock_tx_id,
+        stock_tx_id: stockTxId,
       }
 
       await this.stockController.handleCreateChildStockTx(
         childStockOrder,
+        stockTxId,
         stockTx.wallet_tx_id,
         stockTx.user_name,
         stockTx.stock_tx_id
       )
     } else {
+      stockTxId = stockTx.stock_tx_id
       stockTx.order_status = ORDER_STATUS.COMPLETED
       await stockTx.save()
     }
@@ -121,9 +129,11 @@ export class OrderController {
       )
     } else {
       // update wallet balance
-      await this.walletController.addMoneyToWallet(
+      await this.walletController.handleUpdateWalletBalance(
         stockTx.user_name,
-        stockTx.stock_price * stockOrder.quantity
+        stockOrder,
+        stockTx.wallet_tx_id,
+        stockTxId
       )
     }
   }

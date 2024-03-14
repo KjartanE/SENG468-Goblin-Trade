@@ -1,7 +1,6 @@
 import { IStock } from '../models/stock.model'
 import { IStockTX, StockOrder } from '../models/stock_tx.model'
 import { ORDER_STATUS } from './order.controller'
-import { v4 as uuid } from 'uuid'
 
 const Portfolio = require('../models/portfolio.model')
 const Stock = require('../models/stock.model')
@@ -77,11 +76,11 @@ export class StockController {
    */
   async handleCreateChildStockTx(
     stockOrder: StockOrder,
+    stockTxId: string,
     walletTxId: string,
     user_name: string,
     parent_stock_tx_id: string
   ): Promise<void> {
-    const stockTxId = uuid()
     await this.createStockTx(
       stockOrder,
       stockTxId,

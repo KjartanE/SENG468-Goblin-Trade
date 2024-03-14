@@ -18,7 +18,7 @@ export interface IStockTX {
 }
 
 export interface StockOrder {
-  stock_tx_id?: string
+  stock_tx_id: string
   stock_id: number
   is_buy: boolean
   order_type: ORDER_TYPE
