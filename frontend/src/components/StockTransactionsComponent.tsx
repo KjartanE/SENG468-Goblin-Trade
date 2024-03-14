@@ -9,7 +9,7 @@ import React, { useState } from 'react'
 function StockTransactionsComponent() {
   // Fetch stock portfolio from backend
   const { stock_transactions } = useStockTransactions()
-
+  const { cancelStockTransaction } = useStockTransactions()
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false)
 
   const columns: GridColDef[] = [
@@ -81,6 +81,7 @@ function StockTransactionsComponent() {
             setOpen={setConfirmationDialogOpen}
             onConfirm={() => {
               // Cancel order
+              cancelStockTransaction(params.row.stock_tx_id);
             }}
           >
             Are you sure you want to cancel this order?
