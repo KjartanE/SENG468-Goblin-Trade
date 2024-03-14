@@ -12,6 +12,13 @@ export enum ORDER_STATUS {
   PARTIAL_FULFILLED = 'PARTIAL_FULFILLED',
 }
 
+export enum ORDER_TYPE {
+  MARKET = 'MARKET',
+  LIMIT = 'LIMIT',
+  STOP = 'STOP',
+  STOP_LIMIT = 'STOP_LIMIT',
+}
+
 /**
  * Order Controller
  *
@@ -85,9 +92,17 @@ export class OrderController {
       await stockTx.save()
 
       //create new stockTx for remaining quantity
-      stockOrder.quantity = stockTx.quantity - stockOrder.quantity
+      const childStockOrder: StockOrder = {
+        stock_id: stockTx.stock_id,
+        is_buy: stockTx.is_buy,
+        order_type: ORDER_TYPE.MARKET,
+        price: stockTx.stock_price,
+        quantity: stockOrder.quantity,
+        stock_tx_id: stockTx.stock_tx_id,
+      }
+
       await this.stockController.handleCreateChildStockTx(
-        stockOrder,
+        childStockOrder,
         stockTx.wallet_tx_id,
         stockTx.user_name,
         stockTx.stock_tx_id
@@ -102,13 +117,13 @@ export class OrderController {
       await this.stockController.addStockToUserPortfolio(
         stockTx.user_name,
         stockTx.stock_id,
-        stockTx.quantity
+        stockOrder.quantity
       )
     } else {
       // update wallet balance
       await this.walletController.addMoneyToWallet(
         stockTx.user_name,
-        stockTx.stock_price * stockTx.quantity
+        stockTx.stock_price * stockOrder.quantity
       )
     }
   }

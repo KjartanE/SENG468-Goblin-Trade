@@ -44,6 +44,7 @@ export class StockController {
     stockTxId: string,
     walletTxId: string,
     user_name: string,
+    order_status: ORDER_STATUS,
     parent_stock_tx_id?: string
   ): Promise<void> {
     const stockTx = {
@@ -52,7 +53,7 @@ export class StockController {
       wallet_tx_id: walletTxId,
       parent_stock_tx_id: parent_stock_tx_id || null,
       stock_id: stockOrder.stock_id,
-      order_status: ORDER_STATUS.IN_PROGRESS,
+      order_status: order_status,
       is_buy: stockOrder.is_buy,
       order_type: stockOrder.order_type,
       stock_price: stockOrder.price,
@@ -86,6 +87,7 @@ export class StockController {
       stockTxId,
       walletTxId,
       user_name,
+      ORDER_STATUS.COMPLETED,
       parent_stock_tx_id
     )
   }

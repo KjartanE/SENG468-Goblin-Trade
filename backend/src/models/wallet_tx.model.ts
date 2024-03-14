@@ -12,7 +12,7 @@ export interface IWalletTX {
 export const walletTXSchema = new Schema<IWalletTX>(
   {
     user_name: { type: String, required: true },
-    wallet_tx_id: { type: String, required: true },
+    wallet_tx_id: { type: String, required: true, unique: true },
     stock_tx_id: { type: String, nullable: true },
     is_debit: { type: Boolean, required: true },
     amount: { type: Number, required: true },

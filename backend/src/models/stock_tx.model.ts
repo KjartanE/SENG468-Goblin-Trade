@@ -42,7 +42,7 @@ export const stockTXSchema = new Schema<IStockTX>(
   {
     user_name: { type: String, required: true },
     stock_tx_id: { type: String, required: true, unique: true },
-    wallet_tx_id: { type: String, required: true, unique: true },
+    wallet_tx_id: { type: String, required: true },
     parent_stock_tx_id: { type: String, required: false },
     stock_id: { type: Number, required: true },
     order_status: { type: String, required: true },
