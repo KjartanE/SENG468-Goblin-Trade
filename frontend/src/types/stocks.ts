@@ -36,9 +36,9 @@ export interface IStockTransaction {
  * Form for a buy or sell stock order
  */
 export interface IStockOrderForm {
-  "stock_id": number | '';
-  "is_buy": boolean | '';
-  "order_type": string | '';
-  "quantity": number | '';
-  "price": number | '';
+  stock_id: number | ''
+  is_buy: boolean | ''
+  order_type: string | ''
+  quantity: number | ''
+  price: number | ''
 }

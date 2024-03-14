@@ -125,11 +125,13 @@ export class StockController {
     if (portfolio) {
       portfolio.quantity_owned = portfolio.quantity_owned + quantity
 
-      if(portfolio.quantity_owned === 0) {
-        const response = await Portfolio.deleteOne({ user_name: user_name, stock_id: stock_id })
+      if (portfolio.quantity_owned === 0) {
+        const response = await Portfolio.deleteOne({
+          user_name: user_name,
+          stock_id: stock_id,
+        })
         return response
       }
-
 
       await portfolio.save()
       return portfolio
