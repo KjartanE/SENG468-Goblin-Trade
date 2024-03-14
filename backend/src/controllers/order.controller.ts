@@ -3,7 +3,6 @@ import { IStockTX, StockOrder } from '../models/stock_tx.model'
 import { v4 as uuid } from 'uuid'
 import { WalletController } from './wallet.controller'
 import { StockController } from './stock.controller'
-import { IWallet } from '../models/wallet.model'
 
 const queue = 'stock_orders'
 const StockTx = require('../models/stock_tx.model')
@@ -41,7 +40,9 @@ export class OrderController {
     const stockTxId = await uuid()
     const walletTxId = await uuid()
 
+    // if it is a buy order, check if the user has enough balance
     if (stockOrder.is_buy) {
+      // update stock price if it is a market order
       if (stockOrder.order_type === 'MARKET') {
         const stock = await this.stockController.getStockPrice(
           stockOrder.stock_id
@@ -49,21 +50,12 @@ export class OrderController {
         stockOrder.price = stock.current_price
       }
 
-      await this.handleBuyStockOrder(user_name, stockOrder)
-
-      const amount = stockOrder.price * stockOrder.quantity
-
-      // Create Wallet Transaction
-      await this.walletController.createWalletTx(
-        stockOrder.is_buy,
-        amount,
-        stockTxId,
-        walletTxId
-      )
-      // Update Wallet Transactions in Wallet
-      await this.walletController.updateWalletTransactions(
+      // handle buy stock order
+      await this.walletController.handleUpdateWalletBalance(
         user_name,
-        walletTxId
+        stockOrder,
+        walletTxId,
+        stockTxId
       )
     } else {
       await this.handleSellStockOrder(user_name, stockOrder)
@@ -75,28 +67,6 @@ export class OrderController {
 
     // Queue Stock Order
     await this.queueStockOrder({ ...stockOrder, stock_tx_id: stockTxId })
-  }
-
-  /**
-   * Handle Buy Stock Order
-   *
-   * @param {string} user_name
-   * @param {StockOrder} stockOrder
-   * @return {*}  {Promise<IWallet>}
-   * @memberof OrderController
-   */
-  async handleBuyStockOrder(
-    user_name: string,
-    stockOrder: StockOrder
-  ): Promise<IWallet> {
-    const wallet = await this.walletController.getWallet(user_name)
-    const amount = stockOrder.price * stockOrder.quantity
-
-    if (wallet.balance < amount) {
-      throw new Error('Insufficient balance')
-    }
-
-    return this.walletController.addMoneyToWallet(user_name, -amount)
   }
 
   /**
@@ -116,11 +86,7 @@ export class OrderController {
       stockOrder.stock_id
     )
 
-    if (!portfolio) {
-      throw new Error('Insufficient stocks')
-    }
-
-    if (portfolio.quantity_owned < stockOrder.quantity) {
+    if (!portfolio || portfolio.quantity_owned < stockOrder.quantity) {
       throw new Error('Insufficient stocks')
     }
 
@@ -193,17 +159,6 @@ export class OrderController {
       // return money to wallet
       await this.walletController.returnMoneyToWallet(stockTx)
     }
-  }
-
-  /**
-   * Get All Stock Orders
-   *
-   * @return {*}  {Promise<IStockTX[]>}
-   * @memberof OrderController
-   */
-  async getStockTransactions(): Promise<IStockTX[]> {
-    const stockTX = await StockTx.find({})
-    return stockTX
   }
 
   /**

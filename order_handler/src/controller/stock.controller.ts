@@ -1,8 +1,11 @@
 import { IStock } from '../models/stock.model'
 import { IStockTX, StockOrder } from '../models/stock_tx.model'
+import { ORDER_STATUS } from './order.controller'
+import { v4 as uuid } from 'uuid'
 
 const Portfolio = require('../models/portfolio.model')
 const Stock = require('../models/stock.model')
+const StockTx = require('../models/stock_tx.model')
 
 /**
  * Stock Controller
@@ -26,6 +29,65 @@ export class StockController {
     stockToUpdate.current_price = stockOrder.price
     await stockToUpdate.save()
     return stockToUpdate
+  }
+
+  /**
+   * Create Stock Transaction
+   *
+   * @param {StockOrder} stockOrder
+   * @param {string} stockTxId
+   * @return {*}  {Promise<void>}
+   * @memberof OrderController
+   */
+  async createStockTx(
+    stockOrder: StockOrder,
+    stockTxId: string,
+    walletTxId: string,
+    user_name: string,
+    parent_stock_tx_id?: string
+  ): Promise<void> {
+    const stockTx = {
+      user_name: user_name,
+      stock_tx_id: stockTxId,
+      wallet_tx_id: walletTxId,
+      parent_stock_tx_id: parent_stock_tx_id || null,
+      stock_id: stockOrder.stock_id,
+      order_status: ORDER_STATUS.IN_PROGRESS,
+      is_buy: stockOrder.is_buy,
+      order_type: stockOrder.order_type,
+      stock_price: stockOrder.price,
+      quantity: stockOrder.quantity,
+      time_stamp: new Date(),
+    }
+
+    const stockTxModel = new StockTx(stockTx)
+    await stockTxModel.save()
+  }
+
+  /**
+   * Handle Create Child Stock Transaction
+   *
+   * @param {StockOrder} stockOrder
+   * @param {string} walletTxId
+   * @param {string} user_name
+   * @param {string} parent_stock_tx_id
+   * @return {*}  {Promise<void>}
+   * @memberof StockController
+   */
+  async handleCreateChildStockTx(
+    stockOrder: StockOrder,
+    walletTxId: string,
+    user_name: string,
+    parent_stock_tx_id: string
+  ): Promise<void> {
+    const stockTxId = uuid()
+    await this.createStockTx(
+      stockOrder,
+      stockTxId,
+      walletTxId,
+      user_name,
+      parent_stock_tx_id
+    )
   }
 
   /**

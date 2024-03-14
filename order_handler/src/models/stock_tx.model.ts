@@ -15,6 +15,7 @@ export enum OrderType {
 }
 
 export interface IStockTX {
+  user_name: string
   stock_tx_id: string
   wallet_tx_id: string
   parent_stock_tx_id?: string
@@ -39,6 +40,7 @@ export interface StockOrder {
 
 export const stockTXSchema = new Schema<IStockTX>(
   {
+    user_name: { type: String, required: true },
     stock_tx_id: { type: String, required: true, unique: true },
     wallet_tx_id: { type: String, required: true, unique: true },
     parent_stock_tx_id: { type: String, required: false },

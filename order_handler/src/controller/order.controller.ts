@@ -1,5 +1,5 @@
 import amqp from 'amqplib'
-import { StockOrder } from '../models/stock_tx.model'
+import { IStockTX, StockOrder } from '../models/stock_tx.model'
 import { WalletController } from './wallet.controller'
 import { StockController } from './stock.controller'
 
@@ -9,6 +9,7 @@ export enum ORDER_STATUS {
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
+  PARTIAL_FULFILLED = 'PARTIAL_FULFILLED',
 }
 
 /**
@@ -46,10 +47,9 @@ export class OrderController {
       // return money to wallet
       await this.walletController.returnMoneyToWallet(stockTx)
     } else {
-      const wallet = await this.walletController.getUserWalletByStockTx(stockTx)
       // return stock to portfolio
       await this.stockController.returnStockToPortfolio(
-        wallet.user_name,
+        stockTx.user_name,
         stockTx
       )
     }
@@ -75,33 +75,55 @@ export class OrderController {
     const stockTx = await StockTx.findOne({
       stock_tx_id: stockOrder.stock_tx_id,
     })
+
     if (!stockTx) {
       throw new Error('Invalid Stock Transaction ID')
     }
-    stockTx.order_status = ORDER_STATUS.COMPLETED
-    await stockTx.save()
 
-    // Update Stock Transaction
+    if (stockOrder.quantity < stockTx.quantity) {
+      stockTx.order_status = ORDER_STATUS.PARTIAL_FULFILLED
+      await stockTx.save()
+
+      //create new stockTx for remaining quantity
+      stockOrder.quantity = stockTx.quantity - stockOrder.quantity
+      await this.stockController.handleCreateChildStockTx(
+        stockOrder,
+        stockTx.wallet_tx_id,
+        stockTx.user_name,
+        stockTx.stock_tx_id
+      )
+    } else {
+      stockTx.order_status = ORDER_STATUS.COMPLETED
+      await stockTx.save()
+    }
+
     if (stockOrder.is_buy) {
-      const wallet = await this.walletController.getUserWalletByStockTx(stockTx)
-
       // update stock portfolio
       await this.stockController.addStockToUserPortfolio(
-        wallet.user_name,
+        stockTx.user_name,
         stockTx.stock_id,
         stockTx.quantity
       )
     } else {
-      const wallet = await this.walletController.getUserWalletByStockTx(stockTx)
-
       // update wallet balance
       await this.walletController.addMoneyToWallet(
-        wallet.user_name,
+        stockTx.user_name,
         stockTx.stock_price * stockTx.quantity
       )
     }
+  }
 
-    await this.stockController.updateStockPrice(stockOrder)
+  /**
+   * Get Stock Transactions By UserName
+   *
+   * @param {string} user_name
+   * @return {*}  {Promise<IStockTX[]>}
+   * @memberof OrderController
+   */
+  async getStockTransactionsByUserName(user_name: string): Promise<IStockTX[]> {
+    const stockTransactions = await StockTx.find({ user_name: user_name })
+
+    return stockTransactions
   }
 
   /**
