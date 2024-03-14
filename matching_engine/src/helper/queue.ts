@@ -45,7 +45,7 @@ export class QueueHandler {
         this.handleOrder(data)
       })
     } catch (error) {
-      console.log(error)
+      console.log("Error in connectQueue", error)
     }
   }
 
@@ -55,25 +55,29 @@ export class QueueHandler {
    * @memberof QueueHandler
    */
   async handleExpiredOrders() {
-    const channel = await this.connection.createChannel()
+    try {
+      const channel = await this.connection.createChannel()
   
-    await channel.assertQueue(QUEUES.EXPIRED_ORDERS, { durable: false })
-  
-    channel.consume(QUEUES.EXPIRED_ORDERS, (orderData) => {
-      if (orderData == null) {
-        return
-      }
-        // Parse the original message content
-        const order: StockOrder = JSON.parse(`${Buffer.from(orderData.content)}`)
-  
-        // Set order to expired and acknowledge
-        order.expired = true
-        channel.ack(orderData);
-        console.log("Expiring order: ", order.stock_tx_id)
-  
-        // Send expired order to output queue
-        this.publishToQueue(QUEUES.OUTPUT, JSON.stringify([order]))
-    });
+      await channel.assertQueue(QUEUES.EXPIRED_ORDERS, { durable: false })
+    
+      channel.consume(QUEUES.EXPIRED_ORDERS, (orderData) => {
+        if (orderData == null) {
+          return
+        }
+          // Parse the original message content
+          const order: StockOrder = JSON.parse(`${Buffer.from(orderData.content)}`)
+    
+          // Set order to expired and acknowledge
+          order.expired = true
+          channel.ack(orderData);
+          console.log("Expiring order: ", order.stock_tx_id)
+    
+          // Send expired order to output queue
+          this.publishToQueue(QUEUES.OUTPUT, JSON.stringify([order]))
+      })
+    } catch (error) {
+      console.log("Error in handleExpiredOrders", error)
+    }
   }
 
   /**
@@ -84,24 +88,29 @@ export class QueueHandler {
    * @memberof QueueHandler
    */
   async getQueueLength(queueName: string) {
-    const channel = await this.connection.createChannel()
+    try {
+      const channel = await this.connection.createChannel()
 
-    if (queueName == QUEUES.BUY_ORDERS || queueName == QUEUES.SELL_ORDERS) {
-      await channel.assertQueue(queueName, { 
-        durable: false, 
-        arguments: { 
-          'x-dead-letter-exchange': 'dlx'
-        } 
-      })
-    } else {
-      await channel.assertQueue(queueName, { durable: false })
+      if (queueName == QUEUES.BUY_ORDERS || queueName == QUEUES.SELL_ORDERS) {
+        await channel.assertQueue(queueName, { 
+          durable: false, 
+          arguments: { 
+            'x-dead-letter-exchange': 'dlx'
+          } 
+        })
+      } else {
+        await channel.assertQueue(queueName, { durable: false })
+      }
+  
+      const queue = await channel.checkQueue(queueName)
+  
+      await channel.close()
+  
+      return queue.messageCount
+
+    } catch (error) {
+      console.log("Error in getQueueLength. Args:", queueName, "Error:", error)
     }
-
-    const queue = await channel.checkQueue(queueName)
-
-    await channel.close()
-
-    return queue.messageCount
   }
 
   /**
@@ -142,7 +151,7 @@ export class QueueHandler {
 
       return
     } catch (error) {
-      console.log(error)
+      console.log("Error in publishToQueue. Args:", queueName, data, "Error:", error)
     }
   }
 
@@ -178,54 +187,63 @@ export class QueueHandler {
     // cancel order
     // remove order from queue
 
-    var cancel_order = order._doc
-    var queueName = cancel_order.is_buy ? QUEUES.BUY_ORDERS : QUEUES.SELL_ORDERS
-
-    const channel = await this.connection.createChannel()
-    await channel.assertQueue(queueName, { durable: false })
-
-    const queue = await channel.checkQueue(queueName)
-    const queue_length = queue.messageCount
-
-    if (queue_length != 0) {
-      return new Promise((resolve, reject) => {
-        var count = 0
-
-        // search through queue for order to cancel
-        channel.consume(queueName, (orderData: any) => {
-          const order: StockOrder = JSON.parse(`${Buffer.from(orderData.content)}`)
-          count++
+    try {
+      var cancel_order = order._doc
+      var queueName = cancel_order.is_buy ? QUEUES.BUY_ORDERS : QUEUES.SELL_ORDERS
   
-          if (order.stock_tx_id == cancel_order.stock_tx_id) {
-
-            console.log("Found stock to cancel: ", order.stock_tx_id)
-
-            // Order to cancel found. Dequeue it.
-            // Release the channel
-            channel.ack(orderData)
-            channel.close()
-
-            order.cancel_order = true
-            this.publishToQueue(QUEUES.OUTPUT, JSON.stringify([order]))
-
-            resolve(true)
-            return
-          } else if (count >= queue_length) {
-            console.log("Unable to find order to cancel: ", order.stock_tx_id)
-
-            // Order not found
-            // Release the channel
-            channel.close()
-            resolve(false)
-            return
-          }
-          // Requeue order
-          channel.reject(orderData, true)
-        })
+      const channel = await this.connection.createChannel()
+      await channel.assertQueue(queueName, { 
+        durable: false, 
+        arguments: { 
+          'x-dead-letter-exchange': 'dlx'
+        } 
       })
-    }
-    else {
-      return false
+  
+      const queue = await channel.checkQueue(queueName)
+      const queue_length = queue.messageCount
+  
+      if (queue_length != 0) {
+        return new Promise((resolve, reject) => {
+          var count = 0
+  
+          // search through queue for order to cancel
+          channel.consume(queueName, (orderData: any) => {
+            const order: StockOrder = JSON.parse(`${Buffer.from(orderData.content)}`)
+            count++
+    
+            if (order.stock_tx_id == cancel_order.stock_tx_id) {
+  
+              console.log("Found stock to cancel: ", order.stock_tx_id)
+  
+              // Order to cancel found. Dequeue it.
+              // Release the channel
+              channel.ack(orderData)
+              channel.close()
+  
+              order.cancel_order = true
+              this.publishToQueue(QUEUES.OUTPUT, JSON.stringify([order]))
+  
+              resolve(true)
+              return
+            } else if (count >= queue_length) {
+              console.log("Unable to find order to cancel: ", order.stock_tx_id)
+  
+              // Order not found
+              // Release the channel
+              channel.close()
+              resolve(false)
+              return
+            }
+            // Requeue order
+            channel.reject(orderData, true)
+          })
+        })
+      }
+      else {
+        return false
+      }
+    } catch (error) {
+      console.log("Error in cancelOrder. Args:", order, "Error:", error)
     }
   }
 
@@ -423,12 +441,16 @@ export class QueueHandler {
     stockOrder: StockOrder
   ): Promise<StockOrder | undefined> {
     const channel = await this.connection.createChannel()
-    await channel.assertQueue(queueName, { 
-      durable: false, 
-      arguments: { 
-        'x-dead-letter-exchange': 'dlx'
-      } 
-    })
+    try {
+      await channel.assertQueue(queueName, { 
+        durable: false, 
+        arguments: { 
+          'x-dead-letter-exchange': 'dlx'
+        } 
+      })
+    } catch (error) {
+      console.log("Error in findLowestPrice. Args:", queueName, stockOrder, "Error:", error)
+    }
 
     const queue = await channel.checkQueue(queueName)
     const queue_length = queue.messageCount
@@ -519,12 +541,16 @@ export class QueueHandler {
     stockOrder: StockOrder
   ): Promise<StockOrder | undefined> {
     const channel = await this.connection.createChannel()
-    await channel.assertQueue(queueName, { 
-      durable: false, 
-      arguments: { 
-        'x-dead-letter-exchange': 'dlx'
-      } 
-    })
+    try {
+      await channel.assertQueue(queueName, { 
+        durable: false, 
+        arguments: { 
+          'x-dead-letter-exchange': 'dlx'
+        } 
+      })
+    } catch (error) {
+      console.log("Error in findHighestPrice. Args:", queueName, stockOrder, "Error:", error)
+    }
 
     const queue = await channel.checkQueue(queueName)
     const queue_length = queue.messageCount
