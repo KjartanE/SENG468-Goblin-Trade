@@ -126,8 +126,6 @@ export class QueueHandler {
           } 
         })
 
-        console.log("Publishing perishable order")
-
         channel.sendToQueue(queueName, Buffer.from(data), {
           // Stock orders expire after 15 minutes
           expiration: EXPIRATION_TIME,

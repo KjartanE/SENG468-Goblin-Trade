@@ -11,6 +11,7 @@ export enum ORDER_STATUS {
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
   PARTIAL_FULFILLED = 'PARTIAL_FULFILLED',
+  EXPIRED = 'EXPIRED',
 }
 
 export enum ORDER_TYPE {
@@ -48,7 +49,12 @@ export class OrderController {
       throw new Error('Invalid Stock Transaction ID')
     }
 
-    stockTx.order_status = ORDER_STATUS.CANCELLED
+    // Set status to cancelled or expired
+    if (stockOrder.expired) {
+      stockTx.order_status = ORDER_STATUS.EXPIRED
+    } else {
+      stockTx.order_status = ORDER_STATUS.CANCELLED
+    }
     await stockTx.save()
 
     if (stockOrder.is_buy) {
@@ -77,8 +83,8 @@ export class OrderController {
 
     var stockTxId: string = ''
 
-    // Check if Stock Order is to be cancelled
-    if (stockOrder.cancel_order) {
+    // Check if Stock Order is to be cancelled or expired
+    if (stockOrder.cancel_order || stockOrder.expired) {
       await this.cancelStockOrder(stockOrder)
       return
     }

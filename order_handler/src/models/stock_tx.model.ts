@@ -25,6 +25,7 @@ export interface StockOrder {
   quantity: number
   price: number
   cancel_order?: boolean
+  expired?: boolean
 }
 
 export const stockTXSchema = new Schema<IStockTX>(
