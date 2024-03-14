@@ -85,7 +85,8 @@ export function StockTransactionsProvider({
   const cancelStockTransaction = async (stock_tx_id: number) => {
     try {
       if (!authContext.user?.token) return
-
+      
+      
       await api.stocks.cancelStockTransaction(stock_tx_id)
     } catch (error) {
       console.error('Error:', error)
@@ -96,6 +97,7 @@ export function StockTransactionsProvider({
     stock_transactions,
     orderErrors,
     placeStockOrder,
+    cancelStockTransaction,
   }
 
   return (

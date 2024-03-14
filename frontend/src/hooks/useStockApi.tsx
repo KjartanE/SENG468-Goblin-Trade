@@ -61,11 +61,24 @@ const useStockAPI = (axios: AxiosInstance) => {
     return data.data
   }
 
+  /**
+   * cancel a stock order
+   * 
+   * @param {number} stock_tx_id
+   * @returns {*} Promise
+   */
+  const cancelStockTransaction = async (stock_tx_id: number): Promise<null> => {
+    const { data } = await axios.post('/cancelStockTransaction', { stock_tx_id })
+
+    return data.data
+  }
+
   return {
     getStockPrices,
     getStockPortfolio,
     getStockTransactions,
     placeStockOrder,
+    cancelStockTransaction
   }
 }
 
