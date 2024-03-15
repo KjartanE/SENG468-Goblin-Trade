@@ -4,6 +4,7 @@ import Button from '@mui/material/Button'
 import { DataGrid, GridColDef, GridToolbar, GridRenderCellParams } from '@mui/x-data-grid'
 import ConfirmationDialog from './ConfirmationDialog'
 import React, { useState } from 'react'
+import { useNavigate } from  'react-router-dom'
 
 
 function StockTransactionsComponent() {
@@ -11,6 +12,7 @@ function StockTransactionsComponent() {
   const { stock_transactions, cancelStockTransaction } = useStockTransactions()
   //const { cancelStockTransaction } = useStockTransactions()
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false)
+  const router = useNavigate()
 
   const columns: GridColDef[] = [
     {
@@ -83,6 +85,8 @@ function StockTransactionsComponent() {
               // Cancel order
               
               cancelStockTransaction(params.row.stock_tx_id);
+              // Refresh page
+              router('/stock-details', { replace: true })
             }}
           >
             Are you sure you want to cancel this order?
