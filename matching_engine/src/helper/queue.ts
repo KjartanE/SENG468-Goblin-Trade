@@ -1,7 +1,7 @@
 import amqp from "amqplib"
 import { ORDER_STATUS, OrderType, QUEUES, StockOrder, StockCancelOrder } from "./misc"
 
-const EXPIRATION_TIME = 120000//900000 // 15 minutes
+const EXPIRATION_TIME = 900000 // 15 minutes
 
 export class QueueHandler {
   private connection: amqp.Connection

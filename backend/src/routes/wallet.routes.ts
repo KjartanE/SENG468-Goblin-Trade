@@ -59,15 +59,15 @@ const addMoneyValidator = [
  */
 const addMoneyToWallet = async (req, res) => {
   try {
-    //validate request
-    if (!checkValidation(req)) {
-      sendErrorResponse(res, 401, 'Invalid request')
-      return
-    }
-
     const auth = await handleToken(req)
     if (!auth) {
       sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
+
+    //validate request
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 200, 'Invalid request')
       return
     }
 
