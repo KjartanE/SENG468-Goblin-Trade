@@ -155,9 +155,6 @@ export class OrderController {
     if (stockTx.order_status === ORDER_STATUS.IN_PROGRESS) {
       stockTx.order_status = ORDER_STATUS.CANCELLED
       await stockTx.save()
-
-      // return money to wallet
-      await this.walletController.returnMoneyToWallet(stockTx)
     }
   }
 

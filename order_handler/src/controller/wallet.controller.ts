@@ -109,6 +109,17 @@ export class WalletController {
     await walletTxModel.save()
   }
 
+    /**
+   * Delete Wallet Transaction
+   *
+   * @param {string} stockTxId
+   * @return {*}  {Promise<void>}
+   * @memberof WalletController
+   */
+    async deleteWalletTx(stockTxId: string): Promise<void> {
+      await WalletTx.deleteMany({ stock_tx_id: stockTxId })
+    }
+
   /**
    * Get Wallet Transactions by TXIds
    *
@@ -141,15 +152,5 @@ export class WalletController {
     if (walletTx.is_debit) {
       await this.addMoneyToWallet(stockTx.user_name, walletTx.amount)
     }
-
-    // new Wallet Transactions in Wallet for the returned amount
-    const walletTxId = await uuid()
-    await this.createWalletTx(
-      true,
-      walletTx.amount,
-      stockTx.stock_tx_id,
-      walletTxId,
-      stockTx.user_name
-    )
   }
 }

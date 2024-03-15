@@ -65,6 +65,17 @@ export class StockController {
   }
 
   /**
+   * Delete Stock Transaction
+   *
+   * @param {string} stockTxId
+   * @return {*}  {Promise<void>}
+   * @memberof StockController
+   */
+  async deleteStockTx(stockTxId: string): Promise<void> {
+    await StockTx.deleteOne({ stock_tx_id: stockTxId })
+  }
+
+  /**
    * Handle Create Child Stock Transaction
    *
    * @param {StockOrder} stockOrder

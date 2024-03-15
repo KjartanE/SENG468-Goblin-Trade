@@ -67,6 +67,8 @@ export class OrderController {
         stockTx
       )
     }
+    await this.stockController.deleteStockTx( stockTx.stock_tx_id )
+    await this.walletController.deleteWalletTx( stockTx.stock_tx_id )
 
     return
   }
@@ -133,7 +135,8 @@ export class OrderController {
         stockTx.stock_id,
         stockOrder.quantity
       )
-    } else {
+    }
+     else {
       // update wallet balance
       await this.walletController.handleUpdateWalletBalance(
         stockTx.user_name,
