@@ -1,58 +1,100 @@
 import { useStockTransactions } from '../contexts/StockTransactionsContext'
 import Box from '@mui/material/Box'
-import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid'
+import Button from '@mui/material/Button'
+import { DataGrid, GridColDef, GridToolbar, GridRenderCellParams } from '@mui/x-data-grid'
+import ConfirmationDialog from './ConfirmationDialog'
+import React, { useState } from 'react'
+import { useNavigate } from  'react-router-dom'
 
-const columns: GridColDef[] = [
-  {
-    field: 'stock_tx_id',
-    headerName: 'Stock Transaction ID',
-    width: 200,
-  },
-  {
-    field: 'wallet_tx_id',
-    headerName: 'Wallet Transaction ID',
-    width: 200,
-  },
-  {
-    field: 'stock_id',
-    headerName: 'Stock ID',
-    width: 100,
-  },
-  {
-    field: 'order_status',
-    headerName: 'Order Status',
-    width: 150,
-  },
-  {
-    field: 'is_buy',
-    headerName: 'Is Buy',
-    width: 100,
-  },
-  {
-    field: 'order_type',
-    headerName: 'Order Type',
-    width: 100,
-  },
-  {
-    field: 'stock_price',
-    headerName: 'Stock Price',
-    width: 150,
-  },
-  {
-    field: 'quantity',
-    headerName: 'Quantity',
-    width: 150,
-  },
-  {
-    field: 'time_stamp',
-    headerName: 'Time Stamp',
-    width: 300,
-  },
-]
 
 function StockTransactionsComponent() {
   // Fetch stock portfolio from backend
-  const { stock_transactions } = useStockTransactions()
+  const { stock_transactions, cancelStockTransaction } = useStockTransactions()
+  //const { cancelStockTransaction } = useStockTransactions()
+  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false)
+  const router = useNavigate()
+
+  const columns: GridColDef[] = [
+    {
+      field: 'stock_tx_id',
+      headerName: 'Stock Transaction ID',
+      width: 200,
+    },
+    {
+      field: 'wallet_tx_id',
+      headerName: 'Wallet Transaction ID',
+      width: 200,
+    },
+    {
+      field: 'stock_id',
+      headerName: 'Stock ID',
+      width: 100,
+    },
+    {
+      field: 'order_status',
+      headerName: 'Order Status',
+      width: 150,
+    },
+    {
+      field: 'is_buy',
+      headerName: 'Is Buy',
+      width: 100,
+    },
+    {
+      field: 'order_type',
+      headerName: 'Order Type',
+      width: 100,
+    },
+    {
+      field: 'stock_price',
+      headerName: 'Stock Price',
+      width: 150,
+    },
+    {
+      field: 'quantity',
+      headerName: 'Quantity',
+      width: 150,
+    },
+    {
+      field: 'time_stamp',
+      headerName: 'Time Stamp',
+      width: 300,
+    },
+    {
+      field: 'cancel_order',
+      headerName: 'Cancel Order',
+      width: 150,
+      renderCell: (params: GridRenderCellParams<any, Date>) => (
+        <strong>
+          <Button
+            variant="contained"
+            size="small"
+            style={{ marginLeft: 16 }}
+            tabIndex={params.hasFocus ? 0 : -1}
+            onClick={() => {
+              setConfirmationDialogOpen(true);
+            }}
+          >
+            Cancel
+          </Button>
+          <ConfirmationDialog
+            title="Cancel Order"
+            open={confirmationDialogOpen}
+            setOpen={setConfirmationDialogOpen}
+            onConfirm={() => {
+              // Cancel order
+              
+              cancelStockTransaction(params.row.stock_tx_id);
+              // Refresh page
+              router('/user')
+            }}
+          >
+            Are you sure you want to cancel this order?
+          </ConfirmationDialog>
+        </strong>
+      ),
+    },
+  ]
 
   if (stock_transactions == null) {
     return <Box>Loading...</Box>

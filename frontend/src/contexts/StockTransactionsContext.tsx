@@ -13,12 +13,16 @@ type StockTransactionsType = {
   stock_transactions: IStockTransaction[]
   orderErrors: string
   placeStockOrder: (order: IStockOrderForm) => void
+  cancelStockTransaction: (stock_tx_id: number) => void
 }
 
 const stockTransactionsContextDefaultValues: StockTransactionsType = {
   stock_transactions: [],
   orderErrors: '',
   placeStockOrder: () => {
+    null
+  },
+  cancelStockTransaction: () => {
     null
   },
 }
@@ -78,10 +82,22 @@ export function StockTransactionsProvider({
     }
   }
 
+  const cancelStockTransaction = async (stock_tx_id: number) => {
+    try {
+      if (!authContext.user?.token) return
+      
+      
+      await api.stocks.cancelStockTransaction(stock_tx_id)
+    } catch (error) {
+      console.error('Error:', error)
+    }
+  }
+
   const value = {
     stock_transactions,
     orderErrors,
     placeStockOrder,
+    cancelStockTransaction,
   }
 
   return (

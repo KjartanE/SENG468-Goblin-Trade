@@ -76,6 +76,7 @@ const Navbar: React.FC = () => {
           isOpen={isDrawerOpen}
           toggleDrawer={toggleDrawer}
           isAuthenticated={!!user}
+          setIsDrawerOpen={setIsDrawerOpen}
         />
         <img
           src="/gt_logo.png"
