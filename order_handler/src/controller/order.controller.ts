@@ -48,27 +48,59 @@ export class OrderController {
     if (!stockTx) {
       throw new Error('Invalid Stock Transaction ID')
     }
+    if (
+      stockTx.order_status === ORDER_STATUS.IN_PROGRESS ||
+      stockTx.order_status === ORDER_STATUS.CANCELLED ||
+      stockTx.order_status === ORDER_STATUS.EXPIRED
+    ) {
+      if (stockOrder.is_buy) {
+        // return money to wallet
+        await this.walletController.returnMoneyToWallet(stockTx)
+      } else {
+        // return stock to portfolio
+        await this.stockController.returnStockToPortfolio(
+          stockTx.user_name,
+          stockTx
+        )
+      }
+      await this.stockController.deleteStockTx(stockTx.stock_tx_id)
+      await this.walletController.deleteWalletTx(stockTx.stock_tx_id)
+    } else if (stockTx.order_status === ORDER_STATUS.PARTIAL_FULFILLED) {
+      // find all child stock transactions
+      const childStockTx = await this.findChildrenStockTx(stockTx.stock_tx_id)
 
-    // Set status to cancelled or expired
-    if (stockOrder.expired) {
-      stockTx.order_status = ORDER_STATUS.EXPIRED
-    } else {
-      stockTx.order_status = ORDER_STATUS.CANCELLED
-    }
-    await stockTx.save()
+      if (stockOrder.is_buy) {
+        //calculate total child stock quantity
+        let totalQuantityPurchased = 0
+        for (const tx of childStockTx) {
+          totalQuantityPurchased += tx.quantity
+        }
 
-    if (stockOrder.is_buy) {
-      // return money to wallet
-      await this.walletController.returnMoneyToWallet(stockTx)
-    } else {
-      // return stock to portfolio
-      await this.stockController.returnStockToPortfolio(
-        stockTx.user_name,
-        stockTx
-      )
+        const remainingQuantityNotPurchased =
+          stockTx.quantity - totalQuantityPurchased
+
+        const remainingMoney =
+          remainingQuantityNotPurchased * stockTx.stock_price
+
+        await this.walletController.addMoneyToWallet(
+          stockTx.user_name,
+          remainingMoney
+        )
+      } else {
+        let totalQuantitySold = 0
+        for (const tx of childStockTx) {
+          totalQuantitySold += tx.quantity
+        }
+
+        const remainingQuantityNotSold = stockTx.quantity - totalQuantitySold
+
+        await this.stockController.addStockToUserPortfolio(
+          stockTx.user_name,
+          stockTx.stock_id,
+          remainingQuantityNotSold
+        )
+      }
     }
-    await this.stockController.deleteStockTx( stockTx.stock_tx_id )
-    await this.walletController.deleteWalletTx( stockTx.stock_tx_id )
 
     return
   }
@@ -136,8 +168,7 @@ export class OrderController {
         stockOrder.quantity
       )
       await this.stockController.updateStockPrice(stockOrder)
-    }
-     else {
+    } else {
       // update wallet balance
       await this.walletController.handleUpdateWalletBalance(
         stockTx.user_name,
@@ -146,6 +177,21 @@ export class OrderController {
         stockTxId
       )
     }
+  }
+
+  /**
+   * Find Stock Transaction By ID
+   *
+   * @param {string} stockTxId
+   * @return {*}  {Promise<IStockTX[]>}
+   * @memberof OrderController
+   */
+  async findChildrenStockTx(stockTxId: string): Promise<IStockTX[]> {
+    const stockTransactions = await StockTx.find({
+      parent_stock_tx_id: stockTxId,
+    })
+
+    return stockTransactions
   }
 
   /**
