@@ -4017,8 +4017,8 @@
         </HTTPSamplerProxy>
         <hashTree>
           <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="15 min Delay">
-            <stringProp name="ConstantTimer.delay">121000</stringProp>
-            <stringProp name="TestPlan.comments">reduce to 2 min. was 901000</stringProp>
+            <stringProp name="ConstantTimer.delay">901000</stringProp>
+            <stringProp name="TestPlan.comments"></stringProp>
           </ConstantTimer>
           <hashTree/>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="User1 HTTP Header Manager" enabled="true">
