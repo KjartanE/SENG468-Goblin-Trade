@@ -86,7 +86,7 @@ function StockTransactionsComponent() {
               
               cancelStockTransaction(params.row.stock_tx_id);
               // Refresh page
-              router('/stock-details', { replace: true })
+              router('/user')
             }}
           >
             Are you sure you want to cancel this order?
