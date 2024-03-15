@@ -58,6 +58,11 @@ export class StockController {
     if (!stockToUpdate) {
       throw new Error('Stock not found.')
     }
+
+    if (stockToUpdate.current_price > stockOrder.price) {
+      return stockToUpdate
+    }
+
     stockToUpdate.current_price = stockOrder.price
     await stockToUpdate.save()
     return stockToUpdate

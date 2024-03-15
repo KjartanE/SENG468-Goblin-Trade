@@ -38,7 +38,11 @@ const placeStockOrder = async (req, res) => {
       return
     }
 
-    const auth = await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
     const stockOrder = req.body
 
     if (
@@ -47,7 +51,7 @@ const placeStockOrder = async (req, res) => {
     ) {
       sendErrorResponse(
         res,
-        400,
+        200,
         `When the order_type is LIMIT, the price field is required.
       When the order_type is MARKET, the price field must be null.`
       )
@@ -78,7 +82,11 @@ const getStockTransactions = async (req, res) => {
       return
     }
 
-    const auth = await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
 
     const response = await orderController.getStockTransactionsByUserName(
       auth.user_name
@@ -110,7 +118,11 @@ const cancelStockTransaction = async (req, res) => {
       return
     }
 
-    await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
 
     const stock_tx_id = req.body.stock_tx_id
 
@@ -118,7 +130,7 @@ const cancelStockTransaction = async (req, res) => {
 
     sendSuccessResponse(res, null)
   } catch (err) {
-    sendErrorResponse(res, 401, err)
+    sendErrorResponse(res, 200, err)
   }
 }
 router.post(

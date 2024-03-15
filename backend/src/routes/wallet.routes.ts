@@ -30,7 +30,11 @@ const getWalletBalance = async (req, res) => {
       return
     }
 
-    const auth = await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
 
     const wallet = await walletController.getWallet(auth.user_name)
 
@@ -43,7 +47,7 @@ router.get('/getWalletBalance', tokenValidator, getWalletBalance)
 
 const addMoneyValidator = [
   ...tokenValidator,
-  body('amount', 'Invalid amount').isNumeric(),
+  body('amount', 'Invalid amount').notEmpty().isInt({ min: 0 }),
   body('amount', 'Invalid does not Empty').not().isEmpty(),
 ]
 
@@ -61,7 +65,11 @@ const addMoneyToWallet = async (req, res) => {
       return
     }
 
-    const auth = await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
 
     const amount = req.body.amount
 
@@ -88,7 +96,11 @@ const getWalletTransactions = async (req, res) => {
       return
     }
 
-    const auth = await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
 
     const transactions = await walletController.getWalletTransactionsByUserName(
       auth.user_name

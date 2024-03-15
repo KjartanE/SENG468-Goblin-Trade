@@ -11,6 +11,7 @@ export enum ORDER_STATUS {
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
+  EXPIRED = 'EXPIRED',
 }
 
 /**
@@ -144,6 +145,11 @@ export class OrderController {
       throw new Error('Invalid Stock Transaction ID')
     }
 
+    //check if the order is already completed or expired
+    if (stockTx.order_status !== ORDER_STATUS.IN_PROGRESS) {
+      throw new Error('Order already completed')
+    }
+
     // Queue Stock Order to cancel
     const StockCancelOrder = {
       ...stockTx,
@@ -152,10 +158,8 @@ export class OrderController {
     await this.queueStockOrder(StockCancelOrder)
 
     // Update Stock Transaction
-    if (stockTx.order_status === ORDER_STATUS.IN_PROGRESS) {
-      stockTx.order_status = ORDER_STATUS.CANCELLED
-      await stockTx.save()
-    }
+    stockTx.order_status = ORDER_STATUS.CANCELLED
+    await stockTx.save()
   }
 
   /**

@@ -164,7 +164,13 @@ export class StockController {
       stock_id: stockTx.stock_id,
     })
     if (!portfolio) {
-      throw new Error('Portfolio not found.')
+      const newPortfolio = new Portfolio({
+        user_name: user_name,
+        stock_id: stockTx.stock_id,
+        quantity_owned: stockTx.quantity,
+      })
+      await newPortfolio.save()
+      return
     }
 
     portfolio.quantity_owned = portfolio.quantity_owned + stockTx.quantity

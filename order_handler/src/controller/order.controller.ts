@@ -109,7 +109,7 @@ export class OrderController {
       const childStockOrder: StockOrder = {
         stock_id: stockTx.stock_id,
         is_buy: stockTx.is_buy,
-        order_type: ORDER_TYPE.MARKET,
+        order_type: stockTx.order_type,
         price: stockTx.stock_price,
         quantity: stockOrder.quantity,
         stock_tx_id: stockTxId,
@@ -135,6 +135,7 @@ export class OrderController {
         stockTx.stock_id,
         stockOrder.quantity
       )
+      await this.stockController.updateStockPrice(stockOrder)
     }
      else {
       // update wallet balance

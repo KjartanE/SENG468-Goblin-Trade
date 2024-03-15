@@ -29,7 +29,11 @@ const getStockPrices = async (req, res) => {
       return
     }
 
-    await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
 
     const response = await stockController.getStockPrices()
 
@@ -54,7 +58,11 @@ const getStockPortfolio = async (req, res) => {
       return
     }
 
-    const auth = await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
 
     const response = await stockController.getStockPortfolio(auth.user_name)
     console.log('getStockPortfolio: ', response)
@@ -85,7 +93,11 @@ const createStock = async (req, res) => {
       return
     }
 
-    await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
 
     const stock_name = req.body.stock_name
 
@@ -118,7 +130,11 @@ const addStockToUser = async (req, res) => {
       return
     }
 
-    const auth = await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
 
     const stock_id = req.body.stock_id
     const quantity = req.body.quantity

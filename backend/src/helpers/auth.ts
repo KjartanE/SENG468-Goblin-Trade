@@ -106,17 +106,13 @@ export async function getUid(authToken: string) {
  *
  * @export
  * @param {*} req
- * @param {*} res
  * @return {*}  {(Promise<{ user_name: string }>)}
  */
 export async function handleToken(
-  req: any,
-  res: any
-): Promise<{ user_name: string }> {
+  req: any
+): Promise<{ user_name: string } | null> {
   if (!req.headers.token) {
-    res.status(400).send({
-      message: 'getwalletbalance endpoint requires token header.',
-    })
+    return null
   }
 
   const token = req.headers.token
@@ -124,9 +120,7 @@ export async function handleToken(
   const authController: AuthController = new AuthController()
 
   if (!authController.validateToken(token)) {
-    res.status(400).send({
-      message: 'Invalid token',
-    })
+    return null
   }
 
   const user_name = await getUsername(token)
