@@ -24,11 +24,16 @@ router.use(bodyParser.json())
 const getStockPrices = async (req, res) => {
   try {
     //validate request
-    if (!checkValidation(req, res)) {
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 
-    await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
 
     const response = await stockController.getStockPrices()
 
@@ -48,13 +53,19 @@ router.get('/getStockPrices', tokenValidator, getStockPrices)
 const getStockPortfolio = async (req, res) => {
   try {
     //validate request
-    if (!checkValidation(req, res)) {
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 
-    const auth = await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
 
     const response = await stockController.getStockPortfolio(auth.user_name)
+    console.log('getStockPortfolio: ', response)
 
     sendSuccessResponse(res, response)
   } catch (err) {
@@ -77,11 +88,16 @@ const createStockValidator = [
 const createStock = async (req, res) => {
   try {
     //validate request
-    if (!checkValidation(req, res)) {
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 
-    await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
 
     const stock_name = req.body.stock_name
 
@@ -109,11 +125,16 @@ const addStockToUserValidator = [
 const addStockToUser = async (req, res) => {
   try {
     //validate request
-    if (!checkValidation(req, res)) {
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 
-    const auth = await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
 
     const stock_id = req.body.stock_id
     const quantity = req.body.quantity

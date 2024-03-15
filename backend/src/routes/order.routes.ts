@@ -33,11 +33,16 @@ const placeStockOrderValidator = [
 const placeStockOrder = async (req, res) => {
   try {
     //validate request
-    if (!checkValidation(req, res)) {
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 
-    const auth = await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
     const stockOrder = req.body
 
     if (
@@ -46,7 +51,7 @@ const placeStockOrder = async (req, res) => {
     ) {
       sendErrorResponse(
         res,
-        400,
+        200,
         `When the order_type is LIMIT, the price field is required.
       When the order_type is MARKET, the price field must be null.`
       )
@@ -57,6 +62,7 @@ const placeStockOrder = async (req, res) => {
 
     sendSuccessResponse(res, null)
   } catch (err) {
+    console.log(err)
     sendErrorResponse(res, 401, err)
   }
 }
@@ -70,12 +76,17 @@ router.post('/placeStockOrder', placeStockOrderValidator, placeStockOrder)
  */
 const getStockTransactions = async (req, res) => {
   try {
-    // validate request
-    if (!checkValidation(req, res)) {
+    //validate request
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 
-    const auth = await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
 
     const response = await orderController.getStockTransactionsByUserName(
       auth.user_name
@@ -101,12 +112,17 @@ const cancelStockOrderValidator = [
  */
 const cancelStockTransaction = async (req, res) => {
   try {
-    // validate request
-    if (!checkValidation(req, res)) {
+    //validate request
+    if (!checkValidation(req)) {
+      sendErrorResponse(res, 401, 'Invalid request')
       return
     }
 
-    await handleToken(req, res)
+    const auth = await handleToken(req)
+    if (!auth) {
+      sendErrorResponse(res, 401, 'Invalid token')
+      return
+    }
 
     const stock_tx_id = req.body.stock_tx_id
 
@@ -114,7 +130,7 @@ const cancelStockTransaction = async (req, res) => {
 
     sendSuccessResponse(res, null)
   } catch (err) {
-    sendErrorResponse(res, 401, err)
+    sendErrorResponse(res, 200, err)
   }
 }
 router.post(
