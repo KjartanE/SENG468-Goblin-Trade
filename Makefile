@@ -6,6 +6,43 @@
 
 web: | close build-web run-web
 
+#https://docs.docker.com/engine/swarm/stack-deploy/
+create-registry: ## Creates the registries for the project
+	@echo "==============================================="
+	@echo "Make: create-registries - creating registries"
+	@echo "==============================================="
+	@docker service create --name goblin_registry --publish published=5000,target=5000 registry:2
+
+.ONESHELL:
+push-registry: ## Pushes the images to the registries
+	@echo "==============================================="
+	@echo "Make: push-registries - pushing images to registries"
+	@echo "==============================================="
+	@host_port=127.0.0.1:5000
+	docker tag seng468-goblin-trade-nginx $$host_port/nginx; 
+	docker tag seng468-goblin-trade-backend $$host_port/backend;
+	docker tag seng468-goblin-trade-frontend $$host_port/frontend;
+	docker tag seng468-goblin-trade-database $$host_port/database;
+	docker tag seng468-goblin-trade-rabbitmq $$host_port/rabbitmq;
+	docker tag seng468-goblin-trade-order_handler $$host_port/order_handler;
+	docker tag seng468-goblin-trade-matching_engine $$host_port/matching_engine;
+
+	docker push $$host_port/nginx;
+	docker push $$host_port/backend;
+	docker push $$host_port/frontend;
+	docker push $$host_port/database;
+	docker push $$host_port/rabbitmq;
+	docker push $$host_port/order_handler;
+	docker push $$host_port/matching_engine;
+
+
+deploy-registry: ## Deploys the images from the registries
+	@echo "==============================================="
+	@echo "Make: deploy-registries - deploying images from registries"
+	@echo "==============================================="
+	@docker stack deploy -c compose.yml goblin_trade
+
+
 build-web: ## Builds all backend+web containers
 	@echo "==============================================="
 	@echo "Make: build-web - building web images"
